@@ -15,8 +15,8 @@ def live_html():
     drawing = drawing.replace('__DATA__', json.dumps(dummy))
     markup = markup.replace('MỘT GIAO LỘ · MỘT VÒNG ĐIỀU KHIỂN', 'GIẢ LẬP THỜI GIAN THỰC · CẢM BIẾN ẢO')
     markup = markup.replace('Xe đang chờ. Twin sẽ chọn đèn thế nào?', 'Giao lộ hoạt động liên tục')
-    markup = markup.replace('Mỗi case bắt đầu từ một hàng đợi riêng. Xem chọn đèn, xe đi qua và phản hồi; demo dừng ở cuối case.', 'Mỗi lượt đi qua rõ các bước 1–5 rồi xe mới chạy và phản hồi. Đồng hồ tạm dừng khi giải thích; đoạn xe chạy ở tốc độ 1×.')
-    markup = markup.replace('▶ Bắt đầu case', '▶ Bắt đầu real-time').replace('↺ Xem lại case', '↺ Chạy lại từ 07:00').replace('Khởi động lại case hiện tại', 'Bắt đầu lại mô phỏng từ 07:00')
+    markup = markup.replace('Mỗi case bắt đầu từ một hàng đợi riêng. Xem chọn đèn, xe đi qua và phản hồi; demo dừng ở cuối case.', 'Đã có xe chờ sẵn. Lượt đầu: đếm xe → đồng bộ Twin → chọn đèn → xe đi và phản hồi. Sau đó hệ thống tự chạy real-time liên tục.')
+    markup = markup.replace('▶ Bắt đầu case', '▶ Bắt đầu real-time').replace('↺ Xem lại case', '↺ Chạy lại từ đầu').replace('Khởi động lại case hiện tại', 'Bắt đầu lại với hàng đợi ban đầu')
     markup = markup.replace('<button id="next-case" class="secondary" disabled>Case tiếp theo →</button>', '')
     markup = markup.replace('KHUNG GIỜ CASE NÀY', 'KHUNG GIỜ MÔ PHỎNG').replace('CASE ĐANG XEM', 'QUYẾT ĐỊNH ĐÈN')
     markup = markup.replace('Sẵn sàng phát lại · tốc độ xe 2×', 'Sẵn sàng · tốc độ 1×')
@@ -66,16 +66,16 @@ function renderLive(s){
  // Bound the browser-side packet buffer; the Python model owns the full state.
  for(const t of frames.keys())if(t<row.time-65)frames.delete(t);
  $('play').disabled=false;$('reset').disabled=false;commandPending=false;
- $('play').textContent=s.finished?'Đã hết 2 giờ mô phỏng':running?'Ⅱ Tạm dừng':'▶ '+(row.time?'Tiếp tục real-time':'Bắt đầu real-time');
+ $('play').textContent=s.finished?'Đã đến 09:00':running?'Ⅱ Tạm dừng':'▶ '+(s.has_started?'Tiếp tục real-time':'Bắt đầu real-time');
  $('play').disabled=s.finished;
  $('ns').textContent=`Bắc–Nam: ${row.queue_NS} xe chờ`;$('ew').textContent=`Đông–Tây: ${row.queue_EW} xe chờ`;
  $('clock').textContent='1 hình xe = 1 xe · số đếm cảm biến ảo';
- $('window').textContent='07:00:00–09:00:00';$('now').textContent=clock(row.time);
+ $('window').textContent=clock(s.start_time)+'–09:00:00';$('now').textContent=clock(row.time);
  $('round').textContent='Lượt '+(s.decision_count+(preparing&&flowStage<4?1:0));
- $('global-round').textContent='Tự chọn lại ở đầu mỗi pha xanh';
+ $('global-round').textContent=s.intro_done?'Đang tự động real-time, không dừng lại các bước':'Giải thích 1 lần, sau đó tự động real-time';
  $('play-status').textContent=s.finished?'Đã kết thúc · xem số xe còn chờ':running?(preparing?'Đang giải thích bước '+(flowStage+1)+' · đồng hồ mô phỏng tạm dừng':'Xe đang chạy · 1 giây mô phỏng ≈ 1 giây thực'):'Đang dừng · đồng hồ mô phỏng không chạy';
- $('progress').style.width=(row.time/s.duration*100)+'%';
- const justDecided=preparing&&flowStage>=2&&flowStage<=4;
+ $('progress').style.width=((row.time-s.start_time)/(s.duration-s.start_time)*100)+'%';
+ const justDecided=(preparing&&flowStage>=2&&flowStage<=4)||(!preparing&&d&&row.time===d.time+1);
  const showForecast=!!d&&flowStage>=3,showChoice=showForecast&&flowStage>=4;
  const labels=['Xe đang chờ','Cảm biến đếm','Đồng bộ Twin','Thử phương án','Chọn đèn','Xe đi & phản hồi'];
  $('flow').innerHTML=labels.map((text,i)=>`<div class="step ${i===flowStage?'active':i<flowStage?'done':''}">${i+1}. ${text}${i<5?' →':''}</div>`).join('');
@@ -91,7 +91,7 @@ function renderLive(s){
   else phaseText=`Hai hướng ĐỎ · chờ ${Math.max(0,d.chosen_green+5-elapsed)} giây trước khi đổi hướng`;
  }
  $('phase-status').textContent=phaseText;$('phase-status').dataset.tone=tone;
- $('served-count').textContent=`Đã đi qua từ 07:00: Bắc–Nam ${s.total_served.NS} xe · Đông–Tây ${s.total_served.EW} xe.`;
+ $('served-count').textContent=`Đã đi qua từ ${clock(s.start_time)}: Bắc–Nam ${s.total_served.NS} xe · Đông–Tây ${s.total_served.EW} xe.`;
  $('road-note').textContent=`Giây ${clock(row.time)}: xe mới đến NS +${row.arrivals_NS}, EW +${row.arrivals_EW}; đi qua NS ${row.served_NS}, EW ${row.served_EW}. Đèn đỏ thì xe mới đến phải chờ.`;
  $('t-ns').textContent=flowStage>=2?row.twin_queue_NS:'—';$('t-ew').textContent=flowStage>=2?row.twin_queue_EW:'—';
  $('sync').textContent=flowStage>=2?`Cảm biến gửi lúc ${clock(row.observation_time)} · Twin đã đồng bộ số xe.`:flowStage===1?'Cảm biến đang đếm xe để gửi về Twin.':'Chưa đến bước nhận quan sát của lượt này.';
@@ -101,7 +101,7 @@ function renderLive(s){
  const group=d?(d.phase.startsWith('NS')?'Bắc–Nam':'Đông–Tây'):'';
  const opposite=d?(d.phase.startsWith('NS')?'Đông–Tây':'Bắc–Nam'):'';
  $('forecast').textContent=showForecast?`Dự báo dùng lúc chọn đèn ${clock(d.time)}\nBắc–Nam: ${(d.rate_NS*60).toFixed(1)} xe MỚI/phút\nĐông–Tây: ${(d.rate_EW*60).toFixed(1)} xe MỚI/phút`:'';
- $('forecast-help').textContent=showForecast?`${d.forecast_method==='past_mean_warmup'?'ML đang học ban đầu; tạm dùng trung bình xe đã đến.':'ML dùng các lượt xe đã quan sát để dự báo.'} Dự báo xe mới đến khác với số xe đang chờ. Hiện có ${s.training_samples} mẫu học.`:'Bắt đầu từ hàng đợi rỗng; mô hình chỉ học khi xe đã xuất hiện.';
+ $('forecast-help').textContent=showForecast?`${d.forecast_method==='past_mean_warmup'?'ML đang học ban đầu; tạm dùng trung bình xe đã đến.':'ML dùng các lượt xe đã quan sát để dự báo.'} Dự báo xe mới đến khác với số xe đang chờ. Hiện có ${s.training_samples} mẫu học.`:'Đã có xe chờ ban đầu. Dự báo sẽ hiện sau khi cảm biến đếm và Twin nhận số xe.';
  $('signal-plan').textContent=showChoice?`Đã chọn: ${group} XANH ${d.chosen_green} giây · ${opposite} ĐỎ`:showForecast?`Đang thử 3 phương án xanh cho ${group}`:'';
  $('candidates').innerHTML=showForecast?[15,30,45].map(g=>`<div class="candidate ${showChoice&&g===d.chosen_green?'chosen':''}"><strong>${g} giây</strong>đèn xanh<br>Điểm chờ<br>${num(d['score_'+g])}${showChoice&&g===d.chosen_green?'<br>✓ Được chọn':''}</div>`).join(''):'';
  $('signal-help').textContent=showForecast?'Thời lượng xanh dành cho cả nhóm hướng. Hết xanh phải qua vàng 3 giây và đỏ toàn bộ 2 giây, rồi Twin mới chọn cho hướng tiếp theo.':'';
@@ -109,18 +109,18 @@ function renderLive(s){
  const upcoming=s.next_group==='NS'?'Bắc–Nam':'Đông–Tây';
  const headings=['1. Xe đang chờ tại giao lộ','2. Cảm biến quan sát và đếm xe','3. Đồng bộ hàng đợi vào Twin','4. Dự báo và thử 15 / 30 / 45 giây','5. Chọn thời lượng đèn xanh','6. Xe đi qua và gửi phản hồi'];
  const explanations=[
-  `Lượt này bắt đầu với ${row.queue_NS} xe Bắc–Nam và ${row.queue_EW} xe Đông–Tây đang chờ. Xe đứng yên trong lúc giải thích; chưa áp dụng đèn mới.`,
+  `Ban đầu đã có ${s.initial_queues.NS} xe Bắc–Nam và ${s.initial_queues.EW} xe Đông–Tây chờ sẵn trên đường. Xe đứng yên trong lúc giải thích; chưa áp dụng đèn mới.`,
   `Cảm biến ảo đếm được Bắc–Nam ${row.queue_NS} xe, Đông–Tây ${row.queue_EW} xe và gửi số xe cùng thời điểm ${clock(row.time)} cho Twin.`,
   `Twin cập nhật bản sao riêng: Bắc–Nam ${row.twin_queue_NS} xe, Đông–Tây ${row.twin_queue_EW} xe. Hai số này đến từ quan sát, không lấy từ lượt xe tương lai.`,
   `Twin dự báo xe mới sắp đến từ dữ liệu đã quan sát, rồi thử cho nhóm ${upcoming} xanh 15, 30 hoặc 45 giây trên cùng 120 giây tương lai. Xe ở giao lộ chưa chạy.`,
   `Đã chọn ${group} XANH ${d?.chosen_green??0} giây; ${opposite} ĐỎ. Phương án có điểm chờ thấp nhất được gửi cho bộ điều khiển. Sau bước này xe mới bắt đầu đi.`,
-  `Đèn ${group} xanh theo thời lượng đã chọn. Xe đến và đi từng giây; cảm biến gửi hàng đợi mới về Twin làm phản hồi. Hết xanh/vàng/đỏ, lượt kế tiếp tự quay về bước 1.`
+  `Xe chỉ đi khi đèn xanh; cảm biến gửi hàng đợi mới về Twin làm phản hồi. Từ đây hệ thống tự chạy real-time: tự đổi xanh/vàng/đỏ và chọn phương án mới, không dừng lại các bước 1–5 nữa.`
  ];
  $('heading').textContent=s.finished?'Mô phỏng đã kết thúc':headings[flowStage];
  $('explain').textContent=s.finished?`Đã hết 7.200 giây; còn ${row.queue_NS} xe Bắc–Nam và ${row.queue_EW} xe Đông–Tây chờ.`:explanations[flowStage]+(!running?' Bấm nút bắt đầu/tiếp tục để đi qua từng bước.':'');
  if(preparing){$('phase-status').textContent=`Bước ${flowStage+1}/5 · xe chưa chạy, đồng hồ mô phỏng tạm dừng`;}
  $('traffic-story').hidden=false;
- $('traffic-story').innerHTML='<strong>Xe đến và đi trong lượt chạy này</strong>'+['NS','EW'].map(g=>`<p><b>${g==='NS'?'Bắc–Nam':'Đông–Tây'}:</b> ${s.total_arrived[g]} xe đã đến − ${s.total_served[g]} xe đã qua = <b>${row['queue_'+g]} xe còn chờ</b>.</p>`).join('')+'<strong style="margin-top:10px">Các sự kiện mới nhất</strong><ul>'+s.events.slice(-5).map(event=>`<li><b>${clock(event.time)}</b> · ${event.text}</li>`).join('')+'</ul>';
+ $('traffic-story').innerHTML='<strong>Xe đến và đi trong lượt chạy này</strong>'+['NS','EW'].map(g=>`<p><b>${g==='NS'?'Bắc–Nam':'Đông–Tây'}:</b> ${s.initial_queues[g]} xe chờ ban đầu + ${s.total_arrived[g]} xe mới đến − ${s.total_served[g]} xe đã qua = <b>${row['queue_'+g]} xe còn chờ</b>.</p>`).join('')+'<strong style="margin-top:10px">Các sự kiện mới nhất</strong><ul>'+s.events.slice(-5).map(event=>`<li><b>${clock(event.time)}</b> · ${event.text}</li>`).join('')+'</ul>';
  if(!running||preparing)document.getAnimations().forEach(a=>a.pause());
  liveState=s;requestAnimationFrame(liveHeight);
 }
@@ -148,7 +148,7 @@ def show_realtime():
         if 'traffic_runtime' not in st.session_state:
             arrivals = pd.read_csv(ROOT / 'data/arrivals_by_second.csv')
             st.session_state.traffic_runtime = RealtimeSimulation(
-                arrivals[['arrivals_NS', 'arrivals_EW']].itertuples(index=False, name=None))
+                arrivals[['arrivals_NS', 'arrivals_EW']].itertuples(index=False, name=None), warmup_seconds=35)
         runtime = st.session_state.traffic_runtime
         runtime.poll()
         action = component(html=live_html(), state=runtime.snapshot(), default=None, key='traffic-live')

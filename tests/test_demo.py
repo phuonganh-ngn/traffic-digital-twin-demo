@@ -254,7 +254,7 @@ def test_realtime_control_on_full_page_run(monkeypatch):
     app = AppTest.from_file(str(ROOT / 'app.py')).run(timeout=30)
     assert not app.exception
     assert len(calls) >= 2
-    assert calls[-1]['current']['time'] == 0
+    assert calls[-1]['current']['time'] == 35
     assert calls[-1]['epoch'] != calls[0]['epoch']
 
 
@@ -279,15 +279,43 @@ def test_realtime_shows_every_step_before_cars_move():
     assert simulation.decision_count == 1
     while simulation.environment.time < 35:
         simulation.advance()
-    before = simulation.environment.queues.copy()
+    # Later phases must be automatic: no second educational pause.
+    assert simulation.intro_done
     simulation.poll(now=12)
-    assert simulation.snapshot()['flow_stage'] == 0
-    for step in range(1, 5):
-        simulation.poll(now=12+step*2)
-        assert simulation.snapshot()['flow_stage'] == step
-        assert simulation.environment.time == 35
-        assert simulation.environment.queues == before
-    simulation.poll(now=22)
     assert simulation.snapshot()['flow_stage'] == 5
-    assert simulation.environment.time == 36
+    assert simulation.environment.time == 37
     assert simulation.decision_count == 2
+    for now in range(13, 24):
+        simulation.poll(now=now)
+        assert simulation.snapshot()['flow_stage'] == 5
+
+
+def test_dashboard_starts_with_real_simulated_queue_then_runs_automatically():
+    from realtime import RealtimeSimulation
+    arrivals = pd.read_csv(ROOT / 'data/arrivals_by_second.csv')
+    simulation = RealtimeSimulation(arrivals[['arrivals_NS', 'arrivals_EW']].itertuples(index=False, name=None), warmup_seconds=35)
+    snapshot = simulation.snapshot()
+    assert snapshot['start_time'] == 35
+    assert snapshot['initial_queues'] == {'NS': 1, 'EW': 7}
+    assert snapshot['total_arrived'] == snapshot['total_served'] == {'NS': 0, 'EW': 0}
+    assert snapshot['decision'] is None and snapshot['flow_stage'] == 0
+    simulation.start(now=0)
+    for step in range(1, 5):
+        simulation.poll(now=step*2)
+        assert simulation.environment.time == 35
+        assert simulation.snapshot()['flow_stage'] == step
+    simulation.poll(now=10)
+    assert simulation.environment.time == 36
+    assert simulation.snapshot()['intro_done']
+    for now in range(11, 76):
+        simulation.poll(now=now)
+        snapshot = simulation.snapshot()
+        assert snapshot['flow_stage'] == 5
+        for group in ('NS', 'EW'):
+            assert snapshot['initial_queues'][group]+snapshot['total_arrived'][group]-snapshot['total_served'][group] == snapshot['current'][f'queue_{group}']
+    assert simulation.decision_count >= 3
+    simulation.reset()
+    snapshot = simulation.snapshot()
+    assert snapshot['current']['time'] == 35
+    assert snapshot['initial_queues'] == {'NS': 1, 'EW': 7}
+    assert not snapshot['intro_done'] and not snapshot['has_started'] and not snapshot['running']
