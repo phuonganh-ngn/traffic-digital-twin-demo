@@ -1,6 +1,6 @@
 # Traffic Digital Twin — Demo giao lộ thông minh
 
-Demo Digital Twin nhỏ cho đồ án IoT/AIoT, chạy hoàn toàn trên máy cá nhân. **Bấm “Bắt đầu real-time”** để xem xe đến từng giây, cảm biến ảo cập nhật bản sao số, Twin tính phương án đèn và xe đi qua giao lộ. Có thêm chế độ xem từng case để thuyết trình.
+Demo Digital Twin nhỏ cho đồ án IoT/AIoT, chạy hoàn toàn trên máy cá nhân. **Bấm “Bắt đầu real-time”** để xem xe đến từng giây, cảm biến ảo cập nhật bản sao số, Twin tính phương án đèn và xe đi qua giao lộ.
 
 - Một giao lộ, hai nhóm hướng: Bắc–Nam (NS) và Đông–Tây (EW).
 - Digital Twin có trạng thái riêng, nhận quan sát từ môi trường mô phỏng.
@@ -70,39 +70,22 @@ Repository có sẵn dữ liệu và log của một lần chạy. Trình khởi
 
 ## 4. Cách sử dụng và thuyết trình
 
-### Giả lập thời gian thực — chế độ mặc định
+Dashboard chỉ có một cách chạy. Mở **http://localhost:8501** và bấm **▶ Bắt đầu real-time**.
 
-1. Mở **http://localhost:8501**, chọn **Giả lập thời gian thực** và bấm **▶ Bắt đầu real-time**.
-2. Mở lên đã có **1 xe Bắc–Nam và 7 xe Đông–Tây đang chờ**, lấy từ trạng thái mô phỏng lúc **07:00:35** sau khi tính 35 giây đầu từ chuỗi xe đến. Đây là hàng đợi mô phỏng, không phải số xe chờ đo ngoài thực địa. **Chỉ lượt đầu** hiện rõ bước 1 → 2 → 3 → 4 → 5 (ít nhất 2 giây mỗi bước): xe chờ → cảm biến đếm → Twin hiện số xe → thử phương án → chọn đèn. Sau đó xe đi và phản hồi ở bước 6; các lượt tiếp theo chạy real-time tự động, không dừng giải thích nữa. Trong các bước giải thích, đồng hồ mô phỏng tạm dừng; trong đoạn xe chạy, khoảng **1 giây mô phỏng tương ứng 1 giây thực** khi trang đang kết nối. Xe mới tiếp tục xuất hiện theo chuỗi giả lập trong lúc hệ thống chạy.
-3. Mỗi giây, Python thêm lượt xe đến, phục vụ tối đa 1 xe ở hướng xanh, rồi cảm biến ảo gửi hàng đợi cho **Twin riêng biệt**. Đây là tính toán đang diễn ra, không phát lại quyết định có sẵn trong log.
-4. Khi bắt đầu một pha xanh, Twin học từ dữ liệu đã quan sát, thử 15/30/45 giây và gửi lựa chọn cho bộ điều khiển. Đèn tự đi qua **xanh → vàng 3 giây → hai hướng đỏ 2 giây → hướng còn lại xanh**, chạy liên tục.
-5. Bấm **Ⅱ Tạm dừng** để dừng đồng hồ và xe; **▶ Tiếp tục real-time** để chạy tiếp. **↺ Chạy lại từ đầu** nạp lại hàng đợi ban đầu lúc 07:00:35, đặt bộ đếm lượt chạy về 0 và mở lại phần giải thích lượt đầu. Mô hình chỉ được làm nóng bằng dữ liệu trước 07:00:35, không đọc tương lai.
-6. Chuyển sang **Xem từng case** sẽ tạm dừng lượt real-time. Khi trở lại, anh có thể tiếp tục từ trạng thái đã dừng. Mỗi tab/người xem có lượt mô phỏng riêng.
+1. **Đã có xe chờ:** mở đầu lúc **07:00:35**, với **1 xe Bắc–Nam và 7 xe Đông–Tây**, lấy từ trạng thái mô phỏng sau 35 giây đầu. Đây là hàng đợi giả lập, không phải số xe chờ đo ngoài thực địa.
+2. **Cảm biến đếm:** lần lượt tô sáng bước 1 → 2 → 3 → 4 → 5, mỗi bước ít nhất 2 giây. Xe đứng yên và đồng hồ tạm dừng trong phần giới thiệu.
+3. **Twin hiện số xe:** sau khi đồng bộ, các ô bên phải hiện đúng số xe vừa đếm. Tiếp theo hiển thị dự báo xe mới sẽ đến và điểm thử ba phương án xanh 15/30/45 giây.
+4. **Chọn đèn, xe đi và phản hồi:** áp dụng phương án được chọn, xe bắt đầu di chuyển. Mỗi giây cảm biến cập nhật Twin; hàng đợi có thể tăng hoặc giảm vì xe mới vẫn đến.
+5. **Tự động real-time:** phần giải thích chỉ chạy ở lượt đầu. Sau đó đèn tự luân phiên xanh → vàng 3 giây → hai hướng đỏ 2 giây → hướng còn lại xanh. Các lượt tiếp theo không dừng để giải thích lại; khoảng 1 giây mô phỏng tương ứng 1 giây thực khi trang đang kết nối.
+6. **Điều khiển:** bấm **Ⅱ Tạm dừng** để dừng cả xe và đồng hồ; **▶ Tiếp tục real-time** để chạy tiếp. **↺ Chạy lại từ đầu** nạp lại hàng đợi ban đầu, đưa bộ đếm về 0 và mở lại phần giới thiệu lượt đầu.
 
-Trong chế độ này, cảm biến gửi **mỗi giây** để quan sát dễ hiểu. ML vẫn học từ các khối 10 giây đã hoàn tất; khởi động bằng trung bình quá khứ trước khi đủ mẫu. Dự báo và bảng điểm ghi rõ thời điểm quyết định đèn gần nhất, vì chỉ chọn lại thời lượng khi bắt đầu pha xanh. Sau 7.200 giây mô phỏng, chương trình dừng và báo xe còn chờ. Nếu trang hoặc máy bị treo lâu, đồng hồ không tua qua toàn bộ thời gian mất kết nối; chỉ bù dao động lịch chạy nhỏ.
+Mỗi hình xe = **1 xe**; vẽ đủ số xe chờ, tự điều chỉnh kích thước theo khung. Xe đã được phục vụ đi qua vạch rồi ra khỏi khung. Phép tính dưới giao lộ là **xe chờ ban đầu + xe mới đến − xe đã đi qua = xe còn chờ**. Hai đường đại diện hai nhóm NS/EW, không tái tạo chính xác hình học làn đường/hướng rẽ.
 
-Dữ liệu nguồn vẫn là **tổng xe 15 phút**. Lượt xe từng giây là chuỗi giả lập seed 42; môi trường nhận từng lượt đến theo thời gian, Twin chỉ thấy quan sát đã hoàn tất. Không có camera/cảm biến thật. **Bảng so sánh phía dưới** là kết quả thí nghiệm đủ hai giờ đã lưu, độc lập với lượt real-time đang chạy.
+Dữ liệu nguồn vẫn là **tổng xe 15 phút**; thời điểm xe đến từng giây được giả lập với seed 42. Mô hình chỉ nhận quan sát đã hoàn tất. Cảm biến ảo gửi số xe mỗi giây; ML học từ các khối 10 giây đã qua và dùng trung bình quá khứ khi chưa đủ mẫu. Không có camera hoặc cảm biến thật.
 
-### Xem từng case — giải thích từng quyết định
+Dự báo và bảng điểm ghi thời điểm chọn đèn gần nhất. Bảng so sánh bên dưới là thí nghiệm đủ hai giờ đã lưu, độc lập với lượt đang chạy. Sau khi đến 09:00, mô phỏng dừng và báo số xe còn chờ. Giữ trang đang kết nối để chạy; nếu trang/máy treo lâu, đồng hồ không tua qua toàn bộ thời gian mất kết nối. Mỗi tab/người xem có trạng thái riêng.
 
-Chọn **Xem từng case**, sau đó:
-
-1. Mở **http://localhost:8501**, bấm **▶ Bắt đầu case**.
-2. Theo dõi flow tự chạy, không cần chọn thông số:
-
-   **Hàng đợi ban đầu → Quan sát → Đồng bộ bản sao → Dự báo và thử đèn → Chọn đèn → Xe đi → Phản hồi và dừng**
-
-3. Bên trái là giao lộ, xe chờ, đèn đỏ–vàng–xanh và giây còn lại của pha. Bên phải là bản sao số ở lần đồng bộ gần nhất, lưu lượng xe mới dự báo và điểm của ba phương án xanh 15/30/45 giây. Khi Twin khác giao lộ, ô thông tin ghi rõ hai số xe, thời điểm quan sát và tuổi bản sao: cảm biến ảo gửi số xe mỗi 10 giây và tại điểm chọn đèn; giữa hai lần gửi, Twin giữ số đã nhận. Đây là chu kỳ đồng bộ được cài đặt trong demo. Lời giải thích tiếng Việt tự thay đổi theo từng bước.
-4. Phía trên có **khung giờ của case hiện tại**, **giờ đang xem**, **case hiện tại trên tổng số case** và **số thứ tự quyết định trên toàn buổi 07:00–09:00**. Ví dụ “Case 1/5” và “Lượt 4/207 của cả buổi” là hai số đếm khác nhau.
-5. Bấm **Ⅱ Tạm dừng** để đọc hoặc giải thích; bấm **▶ Tiếp tục** để chạy tiếp. **↺ Xem lại case** trở về đầu case hiện tại và chờ bấm bắt đầu.
-6. Demo có **5 case độc lập**, bắt đầu sau giai đoạn học ban đầu của ML. Mỗi case nạp snapshot hàng đợi riêng, chọn đèn, phát lại đúng khoảng xanh đã chọn, hiện bảng phản hồi (ban đầu + xe đến − xe đi = còn chờ) rồi dừng. Bấm **Case tiếp theo →** mới mở case khác; case mới chờ bấm bắt đầu, không tự chạy nối tiếp. Bộ đếm xe đi qua được tính lại từ 0 cho từng case. Đoạn xe di chuyển ở tốc độ **2×**; các bước giải thích tạm dừng đồng hồ mô phỏng để người xem đọc.
-7. Kéo xuống xem bảng so sánh ba bộ điều khiển. Mở các mục thu gọn để xem biểu đồ, dữ liệu nguồn và giải thích kỹ thuật.
-
-Xe đầu hàng đi qua khi được phục vụ, xe sau tiến lên và xe mới nhập cuối hàng. Mỗi hình xe tương ứng **đúng 1 xe**. Dashboard vẽ đầy đủ số xe chờ, tự điều chỉnh kích thước để hàng đợi vừa khung. Mỗi giây thêm đúng số xe đến rồi cho đúng số xe được phục vụ đi qua; số lượt NS/EW đi qua trong case hiện tại được hiển thị riêng. Xe đã đi qua vạch tiếp tục ra khỏi khung. Hai đường minh họa hai nhóm hướng, không tái tạo chính xác làn đường/hướng rẽ của giao lộ nguồn.
-
-Dưới giao lộ, mục **“Vì sao hết xe rồi lại có xe chờ?”** ghi phép tính của từng hướng: xe ban đầu + xe mới đến − xe đã đi = xe đang chờ. Nhật ký lưu các mốc xuất hiện hàng đợi mới hoặc hàng đợi về 0; lời giải thích của từng giây cho biết xe nào mới đến, xe nào được đi và hướng nào phải chờ đèn đỏ. Ví dụ case 1 có 7 xe Đông–Tây ban đầu, thêm 15 xe trong khoảng xanh và phục vụ 22 xe, nên cuối case còn 0 xe Đông–Tây; 1 xe Bắc–Nam mới đến vẫn chờ đèn đỏ.
-
-**Gợi ý lời giới thiệu:** “Giao lộ mô phỏng gửi số xe chờ cho một bản sao số. Bản sao dùng ML ước lượng xe sắp đến, thử ba thời lượng đèn xanh rồi chọn phương án có tổng chờ dự báo thấp nhất. Sau khi áp dụng, giao lộ gửi quan sát mới trở lại bản sao.”
+**Gợi ý lời giới thiệu:** “Giao lộ đã có xe chờ, cảm biến đếm và gửi số xe cho bản sao số. Twin dự báo xe mới đến, thử ba thời lượng đèn xanh rồi chọn phương án có tổng chờ dự kiến thấp nhất. Xe đi qua, cảm biến gửi quan sát mới làm phản hồi và hệ thống tự lặp liên tục.”
 
 ## 5. Dữ liệu và cách đọc kết quả
 

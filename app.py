@@ -1,11 +1,9 @@
-"""A simple dashboard with live simulation and explanatory cases from saved logs."""
+"""A simple realtime Digital Twin dashboard with saved comparison metrics."""
 import json
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 from get_data import ROOT
 from controllers import POLICIES
-from dashboard_player import player_html
 from live_dashboard import show_realtime
 
 LABELS = {'fixed_time': 'Đèn cố định', 'direct_adaptive': 'Điều chỉnh theo hàng đợi',
@@ -34,15 +32,8 @@ def main():
         st.stop()
 
     st.header('1. Mô phỏng giao lộ')
-    mode = st.radio('Chọn cách xem', ['Giả lập thời gian thực', 'Xem từng case'], horizontal=True)
-    if mode == 'Giả lập thời gian thực':
-        show_realtime()
-        st.caption('Môi trường và Twin đang được Python tính dần từng giây, cảm biến ảo cập nhật mỗi giây. Xe đến được giả lập từ tổng lưu lượng 15 phút; không có cảm biến giao thông thật.')
-    else:
-        if 'traffic_runtime' in st.session_state:
-            st.session_state.traffic_runtime.pause()
-        components.html(player_html(logs['digital_twin'], decisions), height=1000, scrolling=True)
-        st.caption('Chế độ giải thích: phát lại các case từ log đã mô phỏng; mỗi case dừng để xem phản hồi.')
+    show_realtime()
+    st.caption('Môi trường và Twin đang được Python tính dần từng giây, cảm biến ảo cập nhật mỗi giây. Xe đến được giả lập từ tổng lưu lượng 15 phút; không có cảm biến giao thông thật.')
 
     st.header('2. Cách này có giúp xe bớt chờ không?')
     st.write('Bảng dưới là kết quả so sánh đã chạy đủ hai giờ trên cùng lượng xe đến, độc lập với lượt giả lập thời gian thực phía trên. Xem tổng thời gian xe phải xếp hàng và số xe còn chưa đi hết.')
