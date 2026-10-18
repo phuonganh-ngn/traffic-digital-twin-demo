@@ -22,10 +22,10 @@ def load_artifacts():
 
 
 def main():
-    st.set_page_config(page_title='Giao lộ thông minh — Digital Twin', layout='wide')
+    st.set_page_config(page_title='Mô phỏng đèn giao thông — Digital Twin', layout='wide')
     st.markdown('<style>.block-container{padding-top:2rem}</style>', unsafe_allow_html=True)
-    st.title('Giao lộ thông minh hoạt động như thế nào?')
-    st.write('Hãy xem xe đến giao lộ, chờ đèn và đi qua. **Digital Twin** là bản sao số giúp thử các cách bật đèn trước khi áp dụng vào giao lộ.')
+    st.title('Mô phỏng điều khiển đèn giao thông bằng Digital Twin')
+    st.write('Quan sát hàng đợi, lựa chọn thời gian đèn xanh và kết quả xe đi qua trong từng tình huống mô phỏng.')
     try:
         counts, metadata, summary, logs, decisions = load_artifacts()
     except FileNotFoundError:
