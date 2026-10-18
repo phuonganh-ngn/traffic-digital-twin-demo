@@ -1,4 +1,4 @@
-"""A beginner-friendly replay; all counts and decisions come from saved logs."""
+"""A simple dashboard with live simulation and explanatory cases from saved logs."""
 import json
 import pandas as pd
 import streamlit as st
@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 from get_data import ROOT
 from controllers import POLICIES
 from dashboard_player import player_html
+from live_dashboard import show_realtime
 
 LABELS = {'fixed_time': 'Đèn cố định', 'direct_adaptive': 'Điều chỉnh theo hàng đợi',
           'digital_twin': 'Digital Twin + ML'}
@@ -32,12 +33,19 @@ def main():
         st.error('Chạy python3 start.py để tự chuẩn bị dữ liệu và mở demo.')
         st.stop()
 
-    st.header('1. Bấm bắt đầu để xem từng case')
-    components.html(player_html(logs['digital_twin'], decisions), height=1000, scrolling=True)
-    st.caption('Demo minh họa: Python thay giao lộ thật; cảm biến là cảm biến ảo. Hình xe phát lại kết quả đã mô phỏng, không phải camera hoặc dữ liệu giao thông trực tiếp.')
+    st.header('1. Mô phỏng giao lộ')
+    mode = st.radio('Chọn cách xem', ['Giả lập thời gian thực', 'Xem từng case'], horizontal=True)
+    if mode == 'Giả lập thời gian thực':
+        show_realtime()
+        st.caption('Môi trường và Twin đang được Python tính dần từng giây, cảm biến ảo cập nhật mỗi giây. Xe đến được giả lập từ tổng lưu lượng 15 phút; không có cảm biến giao thông thật.')
+    else:
+        if 'traffic_runtime' in st.session_state:
+            st.session_state.traffic_runtime.pause()
+        components.html(player_html(logs['digital_twin'], decisions), height=1000, scrolling=True)
+        st.caption('Chế độ giải thích: phát lại các case từ log đã mô phỏng; mỗi case dừng để xem phản hồi.')
 
     st.header('2. Cách này có giúp xe bớt chờ không?')
-    st.write('Cùng một lượng xe đến, thử ba cách điều khiển trong hai giờ mô phỏng. Xem tổng thời gian xe phải xếp hàng và số xe còn chưa đi hết.')
+    st.write('Bảng dưới là kết quả so sánh đã chạy đủ hai giờ trên cùng lượng xe đến, độc lập với lượt giả lập thời gian thực phía trên. Xem tổng thời gian xe phải xếp hàng và số xe còn chưa đi hết.')
     readable = summary[['policy', 'total_waiting_vehicle_seconds', 'total_served', 'final_backlog']].copy()
     readable['policy'] = readable.policy.map(LABELS)
     readable.columns = ['Cách điều khiển', 'Tổng chờ (xe·giây)', 'Xe đã đi qua', 'Xe còn chờ cuối buổi']

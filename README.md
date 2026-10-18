@@ -1,6 +1,6 @@
 # Traffic Digital Twin — Demo giao lộ thông minh
 
-Demo Digital Twin nhỏ cho đồ án IoT/AIoT, chạy hoàn toàn trên máy cá nhân. **Chỉ cần bấm “Bắt đầu case”** để xem xe đến, xếp hàng, bản sao số dự báo và thử phương án, đèn thay đổi và xe đi qua giao lộ.
+Demo Digital Twin nhỏ cho đồ án IoT/AIoT, chạy hoàn toàn trên máy cá nhân. **Bấm “Bắt đầu real-time”** để xem xe đến từng giây, cảm biến ảo cập nhật bản sao số, Twin tính phương án đèn và xe đi qua giao lộ. Có thêm chế độ xem từng case để thuyết trình.
 
 - Một giao lộ, hai nhóm hướng: Bắc–Nam (NS) và Đông–Tây (EW).
 - Digital Twin có trạng thái riêng, nhận quan sát từ môi trường mô phỏng.
@@ -70,6 +70,23 @@ Repository có sẵn dữ liệu và log của một lần chạy. Trình khởi
 
 ## 4. Cách sử dụng và thuyết trình
 
+### Giả lập thời gian thực — chế độ mặc định
+
+1. Mở **http://localhost:8501**, chọn **Giả lập thời gian thực** và bấm **▶ Bắt đầu real-time**.
+2. Đồng hồ bắt đầu lúc **07:00:00** với hàng đợi rỗng. Khoảng **1 giây mô phỏng tương ứng 1 giây thực** khi trang đang kết nối. Ban đầu có thể chưa có xe; xe xuất hiện khi đến lượt trong chuỗi giả lập.
+3. Mỗi giây, Python thêm lượt xe đến, phục vụ tối đa 1 xe ở hướng xanh, rồi cảm biến ảo gửi hàng đợi cho **Twin riêng biệt**. Đây là tính toán đang diễn ra, không phát lại quyết định có sẵn trong log.
+4. Khi bắt đầu một pha xanh, Twin học từ dữ liệu đã quan sát, thử 15/30/45 giây và gửi lựa chọn cho bộ điều khiển. Đèn tự đi qua **xanh → vàng 3 giây → hai hướng đỏ 2 giây → hướng còn lại xanh**, chạy liên tục.
+5. Bấm **Ⅱ Tạm dừng** để dừng đồng hồ và xe; **▶ Tiếp tục real-time** để chạy tiếp. **↺ Chạy lại từ 07:00** đặt lại hàng đợi, ML, bộ đếm và đồng hồ từ đầu, rồi chờ bấm chạy.
+6. Chuyển sang **Xem từng case** sẽ tạm dừng lượt real-time. Khi trở lại, anh có thể tiếp tục từ trạng thái đã dừng. Mỗi tab/người xem có lượt mô phỏng riêng.
+
+Trong chế độ này, cảm biến gửi **mỗi giây** để quan sát dễ hiểu. ML vẫn học từ các khối 10 giây đã hoàn tất; khởi động bằng trung bình quá khứ trước khi đủ mẫu. Dự báo và bảng điểm ghi rõ thời điểm quyết định đèn gần nhất, vì chỉ chọn lại thời lượng khi bắt đầu pha xanh. Sau 7.200 giây mô phỏng, chương trình dừng và báo xe còn chờ. Nếu trang hoặc máy bị treo lâu, đồng hồ không tua qua toàn bộ thời gian mất kết nối; chỉ bù dao động lịch chạy nhỏ.
+
+Dữ liệu nguồn vẫn là **tổng xe 15 phút**. Lượt xe từng giây là chuỗi giả lập seed 42; môi trường nhận từng lượt đến theo thời gian, Twin chỉ thấy quan sát đã hoàn tất. Không có camera/cảm biến thật. **Bảng so sánh phía dưới** là kết quả thí nghiệm đủ hai giờ đã lưu, độc lập với lượt real-time đang chạy.
+
+### Xem từng case — giải thích từng quyết định
+
+Chọn **Xem từng case**, sau đó:
+
 1. Mở **http://localhost:8501**, bấm **▶ Bắt đầu case**.
 2. Theo dõi flow tự chạy, không cần chọn thông số:
 
@@ -113,7 +130,10 @@ ML là Ridge nhỏ bằng NumPy, học từ các khối 10 giây đã quan sát.
 ```text
 start.py                    # Khởi động bằng một lệnh
 app.py                      # Dashboard Streamlit, đọc log đã lưu
-dashboard_player.py         # Giao lộ, chuyển động xe và phát lại flow
+dashboard_player.py         # Giao lộ, chuyển động xe và phát lại từng case
+realtime.py                 # Môi trường/Twin chạy dần, đồng hồ và cảm biến ảo 1s
+live_dashboard.py           # Giao diện live dùng lại hình xe và nhận trạng thái Python
+live_frontend/index.html   # Kết nối nút điều khiển và cập nhật live, không cần Node.js
 get_data.py                 # Lấy bảng nguồn hoặc bảng dự phòng, ghi metadata
 prepare_arrivals.py         # Phân bổ tổng xe thành lượt đến từng giây
 simulator.py                # Môi trường giao lộ, hàng đợi và chu kỳ đèn
@@ -155,7 +175,7 @@ Thường chỉ cần `start.py`. Nếu muốn chạy lại từng bước sau k
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-`get_data.py` yêu cầu lấy lại bảng nguồn và ghi lại metadata. `run_demo.py` tạo lại CSV kết quả và [báo cáo mục 2.7](docs/REPORT_SECTION_2_7.md). Bộ test kiểm tra bảng nguồn, bảo toàn số xe, chu kỳ đèn, đầu vào giống nhau, Twin tách biệt, không dùng tương lai và dashboard đọc đúng log. Lần kiểm tra hiện tại: **11 tests pass**. Playwright chỉ được dùng khi phát triển để kiểm tra giao diện, không cần cài để chạy demo.
+`get_data.py` yêu cầu lấy lại bảng nguồn và ghi lại metadata. `run_demo.py` tạo lại CSV kết quả và [báo cáo mục 2.7](docs/REPORT_SECTION_2_7.md). Bộ test kiểm tra bảng nguồn, bảo toàn số xe, chu kỳ đèn, đầu vào giống nhau, Twin tách biệt, không dùng tương lai và dashboard đọc đúng log. Lần kiểm tra hiện tại: **15 tests pass**. Playwright chỉ được dùng khi phát triển để kiểm tra giao diện, không cần cài để chạy demo.
 
 ## 8. Lỗi thường gặp
 

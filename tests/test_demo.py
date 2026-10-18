@@ -155,3 +155,85 @@ def test_dashboard_loads_saved_logs():
     assert '__DATA__' not in html
     assert 'Bắt đầu case' in html
     assert 'Xe đi & phản hồi' in html
+
+
+def test_realtime_clock_pause_and_reset():
+    from realtime import RealtimeSimulation
+    simulation = RealtimeSimulation([(1, 2)] * 120)
+    simulation.start(now=10)
+    simulation.poll(now=10.9)
+    assert simulation.environment.time == 0
+    simulation.poll(now=11)
+    assert simulation.environment.time == 1
+    simulation.pause()
+    simulation.poll(now=100)
+    assert simulation.environment.time == 1
+    simulation.start(now=100)
+    simulation.poll(now=100.9)
+    assert simulation.environment.time == 1
+    simulation.poll(now=101)
+    assert simulation.environment.time == 2
+    old_epoch = simulation.epoch
+    simulation.reset()
+    assert simulation.epoch != old_epoch
+    assert simulation.environment.time == 0 and not simulation.running
+    assert simulation.environment.queues == {'NS': 0, 'EW': 0}
+    assert simulation.decision_count == 0 and simulation.decision is None
+
+
+def test_realtime_uses_only_arrivals_already_observed():
+    from realtime import RealtimeSimulation
+    prefix = [(0, 1)] * 120
+    a = RealtimeSimulation(prefix + [(0, 0)] * 60)
+    b = RealtimeSimulation(prefix + [(10, 10)] * 60)
+    for _ in range(120):
+        a.advance()
+        b.advance()
+        assert a.current == b.current
+        assert a.decision == b.decision
+        assert a.twin.queues == a.environment.queues
+        assert a.twin.queues is not a.environment.queues
+        assert a.twin.observation_time == a.environment.time
+    assert a.twin.training_samples > 0
+    a.advance()
+    b.advance()
+    assert a.environment.arrived != b.environment.arrived
+
+
+def test_realtime_complete_run_matches_saved_experiment():
+    from realtime import RealtimeSimulation
+    arrivals = pd.read_csv(ROOT / 'data/arrivals_by_second.csv')
+    simulation = RealtimeSimulation(arrivals[['arrivals_NS', 'arrivals_EW']].itertuples(index=False, name=None))
+    # The realtime UI feeds packets each second, while the offline run observes
+    # every 10s and at decisions. Both must make the same decisions on this input.
+    recorded = pd.read_csv(ROOT / 'results/timeseries_digital_twin.csv')
+    for record in recorded.itertuples():
+        simulation.advance()
+        row = simulation.current
+        assert row['phase'] == record.phase
+        for group in ('NS', 'EW'):
+            assert row[f'queue_{group}'] == getattr(record, f'queue_{group}')
+            assert row[f'served_{group}'] == getattr(record, f'served_{group}')
+            assert simulation.environment.arrived[group] == simulation.environment.served[group]+simulation.environment.queues[group]
+    assert simulation.finished and not simulation.running
+    assert simulation.environment.waiting == recorded.accumulated_waiting.iloc[-1]
+    assert simulation.snapshot()['current']['time'] == 7200
+    simulation.advance()
+    assert simulation.environment.time == 7200
+
+
+def test_realtime_clock_keeps_fractional_seconds():
+    from realtime import RealtimeSimulation
+    simulation = RealtimeSimulation([(0, 1)] * 120)
+    simulation.start(now=0)
+    simulation.poll(now=0.99)
+    assert simulation.environment.time == 0
+    simulation.poll(now=1.99)
+    assert simulation.environment.time == 1
+    simulation.poll(now=2.99)
+    assert simulation.environment.time == 2
+    simulation.poll(now=3.99)
+    assert simulation.environment.time == 3
+    simulation.poll(now=100)
+    assert simulation.environment.time == 8  # Bounded catch-up, without skipping input.
+    assert simulation.environment.arrived['EW'] == 8
