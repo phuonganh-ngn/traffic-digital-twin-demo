@@ -1,7 +1,7 @@
 <!DOCTYPE html><html><head><meta charset="utf-8"><style>
-html,body{margin:0;padding:0}iframe{display:block;width:100%;border:0}
+html,body{margin:0;padding:0;overflow:hidden}iframe{display:block;width:100%;border:0}
 </style></head><body><iframe id="view" title="Giao lộ giả lập thời gian thực"></iframe><script>
-const view=document.getElementById('view');let loaded=false,latest=null,html=null,sequence=0;
+const view=document.getElementById('view');let loaded=false,latest=null,html=null,sequence=0,frameHeight=850;
 function send(type,fields={}){window.parent.postMessage({isStreamlitMessage:true,type,...fields},'*');}
 function update(){if(loaded&&latest)view.contentWindow.postMessage({type:'traffic:state',state:latest},'*');}
 view.addEventListener('load',()=>{loaded=true;update();});
@@ -13,7 +13,9 @@ window.addEventListener('message',event=>{
  }
  if(event.source===view.contentWindow){
   if(message.type==='traffic:height'){
-   const height=Math.max(200,Math.ceil(message.height));view.style.height=height+'px';
+   const height=Math.max(200,Math.ceil(message.height));
+   if(height===frameHeight)return;
+   frameHeight=height;view.style.height=height+'px';
    send('streamlit:setFrameHeight',{height});
   }
   if(message.type==='traffic:action'){

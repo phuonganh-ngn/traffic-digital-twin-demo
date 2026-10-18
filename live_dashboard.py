@@ -20,11 +20,35 @@ def live_html():
     markup = markup.replace('Nhận số xe chờ, dự báo và thử phương án trước khi ra lệnh.', 'Cảm biến ảo gửi số xe mỗi giây. Twin thử phương án mới khi bắt đầu một pha xanh.')
     start = markup.index('<div class="footer">')
     markup = markup[:start] + '<div class="footer">Đây là mô phỏng đang được tính từng giây trên máy, không phải log phát lại hay giao lộ thật. Tổng xe 15 phút là dữ liệu công bố; thời điểm xe đến từng giây là giả lập. Mỗi hình xe = 1 xe. Giữ trang đang kết nối để chạy; tạm dừng sẽ dừng đồng hồ mô phỏng.</div></div>'
+    markup = markup.replace('<div id="phase-status" class="phase-pill"></div>', '<div class="phase-slot"><div id="phase-status" class="phase-pill"></div></div>')
+    markup = markup.replace('</head>', '<style>'+LIVE_CSS+'</style></head>')
     return markup + '<script>' + drawing + LIVE_JS + '</script></body></html>'
 
 
+LIVE_CSS = r'''
+html{overflow:hidden}
+.shell{font-variant-numeric:tabular-nums}
+.phase-slot{min-height:60px}
+.meta-card span{display:block;min-height:36px;line-height:18px}
+.step{height:48px;display:flex;align-items:center;justify-content:center}
+#forecast-help{min-height:98px}
+.candidate{min-height:130px}
+.live-events{height:140px;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.live-balance{min-height:2em}
+#served-count,#road-note{min-height:36px;line-height:18px}
+@media(max-width:650px){
+ .step{height:60px}
+ #forecast-help{min-height:156px}
+ .live-balance{min-height:5em}
+ .meta-card span{min-height:72px}
+ #served-count{min-height:54px}
+ #road-note{min-height:72px}
+}
+'''
+
+
 LIVE_JS = r'''
-let liveEpoch=null,liveState=null,commandPending=false;
+let liveEpoch=null,liveState=null,commandPending=false,postedHeight=0;
 function requestAction(action){
  if(commandPending)return;
  commandPending=true;$('play').disabled=true;$('reset').disabled=true;
@@ -38,7 +62,9 @@ function clearLiveCars(){
  replayServed.NS=0;replayServed.EW=0;
 }
 function liveHeight(){
- window.parent.postMessage({type:'traffic:height',height:document.querySelector('.shell').getBoundingClientRect().height+2},'*');
+ const height=Math.ceil(document.querySelector('.shell').getBoundingClientRect().height)+2;
+ if(height===postedHeight)return;
+ postedHeight=height;window.parent.postMessage({type:'traffic:height',height},'*');
 }
 if('ResizeObserver' in window)new ResizeObserver(()=>requestAnimationFrame(liveHeight)).observe(document.querySelector('.shell'));
 window.addEventListener('resize',()=>requestAnimationFrame(liveHeight));
@@ -117,7 +143,7 @@ function renderLive(s){
  $('explain').textContent=s.finished?`Đã hết 7.200 giây; còn ${row.queue_NS} xe Bắc–Nam và ${row.queue_EW} xe Đông–Tây chờ.`:explanations[flowStage]+(!running?' Bấm nút bắt đầu/tiếp tục để đi qua từng bước.':'');
  if(preparing){$('phase-status').textContent=`Bước ${flowStage+1}/5 · xe chưa chạy, đồng hồ mô phỏng tạm dừng`;}
  $('traffic-story').hidden=false;
- $('traffic-story').innerHTML='<strong>Xe đến và đi trong lượt chạy này</strong>'+['NS','EW'].map(g=>`<p><b>${g==='NS'?'Bắc–Nam':'Đông–Tây'}:</b> ${s.initial_queues[g]} xe chờ ban đầu + ${s.total_arrived[g]} xe mới đến − ${s.total_served[g]} xe đã qua = <b>${row['queue_'+g]} xe còn chờ</b>.</p>`).join('')+'<strong style="margin-top:10px">Các sự kiện mới nhất</strong><ul>'+s.events.slice(-5).map(event=>`<li><b>${clock(event.time)}</b> · ${event.text}</li>`).join('')+'</ul>';
+ $('traffic-story').innerHTML='<strong>Xe đến và đi trong lượt chạy này</strong>'+['NS','EW'].map(g=>`<p class="live-balance"><b>${g==='NS'?'Bắc–Nam':'Đông–Tây'}:</b> ${s.initial_queues[g]} xe chờ ban đầu + ${s.total_arrived[g]} xe mới đến − ${s.total_served[g]} xe đã qua = <b>${row['queue_'+g]} xe còn chờ</b>.</p>`).join('')+'<strong style="margin-top:10px">Các sự kiện mới nhất</strong><ul class="live-events">'+(s.events.length?s.events.slice(-5).map(event=>`<li><b>${clock(event.time)}</b> · ${event.text}</li>`).join(''):'<li>Chưa có sự kiện mới. Bấm bắt đầu để chạy mô phỏng.</li>')+'</ul>';
  if(!running||preparing)document.getAnimations().forEach(a=>a.pause());
  liveState=s;requestAnimationFrame(liveHeight);
 }
