@@ -1,6 +1,6 @@
 # Traffic Digital Twin - Demo giao lộ thông minh
 
-Demo Digital Twin nhỏ cho đồ án IoT/AIoT, chạy hoàn toàn trên máy cá nhân. **Bấm “Bắt đầu real-time”** để xem xe đến từng giây, cảm biến ảo cập nhật bản sao số, Twin tính phương án đèn và xe đi qua giao lộ.
+Mô phỏng một giao lộ có hai nhóm hướng Bắc-Nam và Đông-Tây. Chương trình đếm xe đang chờ, cập nhật vào Digital Twin rồi thử các thời lượng đèn xanh để chọn phương án. Chạy trên máy cá nhân và xem qua dashboard Streamlit.
 
 - Một giao lộ, hai nhóm hướng: Bắc-Nam (NS) và Đông-Tây (EW).
 - Digital Twin có trạng thái riêng, nhận quan sát từ môi trường mô phỏng.
@@ -68,24 +68,40 @@ Sau khi terminal hiện địa chỉ, mở **http://localhost:8501**. Giữ term
 
 Repository có sẵn dữ liệu và log của một lần chạy. Trình khởi động dùng lại bảng nguồn đã lưu và sinh lại lượt xe, mô phỏng. Nếu thiếu bảng nguồn hoặc metadata, nó chạy bước lấy dữ liệu; nếu trang nguồn không truy cập được, có bảng dự phòng và ghi rõ phương thức lấy dữ liệu.
 
-## 4. Cách sử dụng và thuyết trình
+## 4. Cách sử dụng
 
-Dashboard chỉ có một cách chạy. Mở **http://localhost:8501** và bấm **▶ Bắt đầu real-time**.
+Mở **http://localhost:8501** sau khi chạy chương trình. Màn hình chính có ba phần:
 
-1. **Đã có xe chờ:** mở đầu lúc **07:00:35**, với **1 xe Bắc-Nam và 7 xe Đông-Tây**, lấy từ trạng thái mô phỏng sau 35 giây đầu. Đây là hàng đợi giả lập, không phải số xe chờ đo ngoài thực địa.
-2. **Cảm biến đếm:** lần lượt tô sáng bước 1 → 2 → 3 → 4 → 5, mỗi bước ít nhất 2 giây. Xe đứng yên và đồng hồ tạm dừng trong phần giới thiệu.
-3. **Twin hiện số xe:** sau khi đồng bộ, các ô bên phải hiện đúng số xe vừa đếm. Tiếp theo hiển thị dự báo xe mới sẽ đến và điểm thử ba phương án xanh 15/30/45 giây.
-4. **Chọn đèn, xe đi và phản hồi:** áp dụng phương án được chọn, xe bắt đầu di chuyển. Mỗi giây cảm biến cập nhật Twin; hàng đợi có thể tăng hoặc giảm vì xe mới vẫn đến.
-5. **Tự động real-time:** phần giải thích chỉ chạy ở lượt đầu. Sau đó đèn tự luân phiên xanh → vàng 3 giây → hai hướng đỏ 2 giây → hướng còn lại xanh. Các lượt tiếp theo không dừng để giải thích lại; khoảng 1 giây mô phỏng tương ứng 1 giây thực khi trang đang kết nối.
-6. **Điều khiển:** bấm **Ⅱ Tạm dừng** để dừng cả xe và đồng hồ; **▶ Tiếp tục real-time** để chạy tiếp. **↺ Chạy lại từ đầu** nạp lại hàng đợi ban đầu, đưa bộ đếm về 0 và mở lại phần giới thiệu lượt đầu.
+### Mô phỏng giao lộ
 
-Mỗi hình xe = **1 xe**; vẽ đủ số xe chờ, tự điều chỉnh kích thước theo khung. Xe đã được phục vụ đi qua vạch rồi ra khỏi khung. Phép tính dưới giao lộ là **xe chờ ban đầu + xe mới đến − xe đã đi qua = xe còn chờ**. Hai đường đại diện hai nhóm NS/EW, không tái tạo chính xác hình học làn đường/hướng rẽ.
+- **Khung giao lộ:** hiển thị xe chờ ở hai hướng Bắc-Nam và Đông-Tây, đèn giao thông và xe đi qua. Mỗi hình xe tương ứng một xe.
+- **Đồng hồ và lượt chọn đèn:** cho biết mô phỏng đang ở thời điểm nào và hệ thống đã chọn đèn đến lượt thứ mấy.
+- **Thanh các bước:** cho biết hệ thống đang đếm xe, đồng bộ Twin, thử phương án, chọn đèn hay nhận phản hồi.
+- **Khung Twin:** hiển thị số xe chờ đã nhận từ cảm biến, dự báo xe mới đến và ba phương án đèn xanh 15, 30, 45 giây. Phương án được chọn có dấu đánh dấu. Thời lượng này dành cho đèn xanh của cả nhóm hướng.
+- **Phần phản hồi:** hiển thị số xe mới đến, số xe đã đi qua, số xe còn chờ và các sự kiện vừa xảy ra.
 
-Dữ liệu nguồn vẫn là **tổng xe 15 phút**; thời điểm xe đến từng giây được giả lập với seed 42. Mô hình chỉ nhận quan sát đã hoàn tất. Cảm biến ảo gửi số xe mỗi giây; ML học từ các khối 10 giây đã qua và dùng trung bình quá khứ khi chưa đủ mẫu. Không có camera hoặc cảm biến thật.
+Các nút điều khiển:
 
-Dự báo và bảng điểm ghi thời điểm chọn đèn gần nhất. Bảng so sánh bên dưới là thí nghiệm đủ hai giờ đã lưu, độc lập với lượt đang chạy. Sau khi đến 09:00, mô phỏng dừng và báo số xe còn chờ. Giữ trang đang kết nối để chạy; nếu trang/máy treo lâu, đồng hồ không tua qua toàn bộ thời gian mất kết nối. Mỗi tab/người xem có trạng thái riêng.
+| Nút | Chức năng |
+|---|---|
+| **▶ Bắt đầu real-time** | Bắt đầu mô phỏng. Lượt đầu đi qua từng bước để dễ theo dõi, sau đó tự chạy liên tục. |
+| **Ⅱ Tạm dừng** | Dừng xe và đồng hồ mô phỏng để xem các số liệu. |
+| **▶ Tiếp tục real-time** | Chạy tiếp từ thời điểm vừa tạm dừng. |
+| **↺ Chạy lại từ đầu** | Đưa mô phỏng về hàng đợi ban đầu và đặt lại bộ đếm. Bấm bắt đầu để xem lại. |
 
-**Gợi ý lời giới thiệu:** “Giao lộ đã có xe chờ, cảm biến đếm và gửi số xe cho bản sao số. Twin dự báo xe mới đến, thử ba thời lượng đèn xanh rồi chọn phương án có tổng chờ dự kiến thấp nhất. Xe đi qua, cảm biến gửi quan sát mới làm phản hồi và hệ thống tự lặp liên tục.”
+Khi mới mở, giao lộ có **1 xe Bắc-Nam và 7 xe Đông-Tây** đang chờ, tại **07:00:35**. Bấm bắt đầu, hệ thống sẽ lần lượt đếm xe, gửi số xe vào Twin, thử ba thời lượng đèn xanh rồi chọn một phương án. Trong phần này xe đứng yên để người xem theo dõi. Sau đó xe bắt đầu đi và hệ thống tự đổi đèn, cập nhật số xe cho đến 09:00.
+
+**Số xe đang chờ** là số xe hiện có ở giao lộ. **Dự báo xe mới/phút** là lượng xe ước tính sắp đến, nên vẫn có thể lớn hơn 0 dù hàng đợi đã hết xe.
+
+### Cách này có giúp xe bớt chờ không?
+
+Bảng so sánh ba cách điều khiển: đèn cố định, điều chỉnh theo hàng đợi và Digital Twin + ML. Các cột cho biết tổng thời gian chờ, số xe đã đi qua và số xe còn chờ cuối buổi. Tổng chờ càng thấp thì xe phải xếp hàng càng ít.
+
+Bấm **Xem biểu đồ và cách hoạt động của ba bộ điều khiển** để mở phần giải thích và biểu đồ. Đây là kết quả đã chạy đủ hai giờ, không thay đổi theo lượt mô phỏng đang xem ở phía trên.
+
+### Xe trong demo đến từ đâu?
+
+Phần này giải thích nguồn dữ liệu xe. Bấm **Xem bảng dữ liệu gốc** để xem bảng đếm xe theo từng khoảng 15 phút và đường dẫn nguồn. Demo chia số xe trong mỗi khoảng thành các lượt đến từng giây để chạy mô phỏng; không có cảm biến hoặc camera thật.
 
 ## 5. Dữ liệu và cách đọc kết quả
 
@@ -176,4 +192,4 @@ Thường chỉ cần `start.py`. Nếu muốn chạy lại từng bước sau k
 
 ## 9. Phạm vi và giới hạn
 
-Đây là prototype offline: Python thay giao lộ thực; cảm biến ảo lý tưởng; không có camera, video, phần cứng hoặc cấu trúc giao lộ thật. ML chưa được kiểm định cho dự báo giao thông thực tế. Đồ họa phát lại log, không trực tiếp điều khiển thiết bị. Kết quả minh họa nguyên lý quan sát → đồng bộ → thử phương án → quyết định → phản hồi của Digital Twin, không chứng minh mức giảm tắc đường ngoài thực địa.
+Đây là prototype offline: Python thay giao lộ thực; cảm biến ảo lý tưởng; không có camera, video, phần cứng hoặc cấu trúc giao lộ thật. ML chưa được kiểm định cho dự báo giao thông thực tế. Giao lộ trên màn hình được tính từng giây bằng Python, không điều khiển thiết bị thật. Kết quả minh họa nguyên lý quan sát → đồng bộ → thử phương án → quyết định → phản hồi của Digital Twin, không chứng minh mức giảm tắc đường ngoài thực địa.
