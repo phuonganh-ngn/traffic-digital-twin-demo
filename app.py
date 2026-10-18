@@ -53,7 +53,7 @@ def main():
 
     st.header('3. Xe trong demo đến từ đâu?')
     st.write('Nguồn công bố có **8 mốc đếm xe, mỗi mốc 15 phút, từ 07:00 đến 09:00**. Demo phân bổ các tổng xe này thành từng giây để tạo lượt xe đến. Số xe từng mốc được giữ nguyên.')
-    with st.expander('Xem bảng dữ liệu và thông tin kỹ thuật'):
+    with st.expander('Xem bảng dữ liệu gốc'):
         st.markdown(f"Nguồn: [HCM Guide — Exhibit 2-27]({metadata['source_url']})")
         method = 'Đã lấy trực tiếp từ trang nguồn' if metadata['acquisition_method'] == 'web_extracted' else 'Dùng bảng dự phòng đã đối chiếu nguồn'
         st.write(method)
@@ -61,8 +61,6 @@ def main():
             st.caption(f"Lỗi truy xuất: {metadata['retrieval_error']}")
         st.dataframe(counts, hide_index=True, width='stretch')
         st.bar_chart(counts.set_index('start_time')[['arrivals_NS', 'arrivals_EW']])
-        st.write('ML là hồi quy Ridge nhỏ, học dần từ các lượt xe đã quan sát. Dự báo được kết hợp với trung bình quá khứ; không đọc trước lượt xe tương lai. Twin cập nhật mỗi 10 giây và tại điểm chọn đèn. Mỗi phương án 15/30/45 giây được đánh giá trên cùng 120 giây tương lai.')
-        st.caption('Bản phát lại bắt đầu sau giai đoạn học ban đầu và có 5 case độc lập. Mỗi case dừng sau khoảng xanh để xem phản hồi; chỉ chuyển case khi bấm nút. Xe vẽ trên hai đường đại diện hai nhóm NS/EW; không tái tạo chính xác các làn hoặc hướng rẽ. Tổng chờ tính từ hàng đợi sau phục vụ mỗi giây. Các xe còn lại cuối hai giờ được báo cáo riêng, không giả định đã đi hết.')
 
 
 if __name__ == '__main__':
