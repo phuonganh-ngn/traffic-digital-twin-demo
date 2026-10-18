@@ -130,7 +130,7 @@ class RealtimeSimulation:
         self.environment.signal.choose(decision['chosen_green'])
         self.decision = decision
         self.decision_count += 1
-        name = 'Bắc–Nam' if self.environment.signal.group == 'NS' else 'Đông–Tây'
+        name = 'Bắc-Nam' if self.environment.signal.group == 'NS' else 'Đông-Tây'
         self.events.append(dict(time=self.environment.time,
                                 text=f"Twin chọn đèn xanh cho {name}: {decision['chosen_green']} giây."))
 
@@ -154,10 +154,10 @@ class RealtimeSimulation:
         self.current = row
         self.recent_frames.append(row.copy())
         if ns or ew:
-            self.events.append(dict(time=env.time, text=f'Xe mới đến: Bắc–Nam +{ns}, Đông–Tây +{ew}.'))
+            self.events.append(dict(time=env.time, text=f'Xe mới đến: Bắc-Nam +{ns}, Đông-Tây +{ew}.'))
         if row['phase'] != previous_phase:
-            phase_names = {'NS_GREEN': 'Bắc–Nam xanh', 'EW_GREEN': 'Đông–Tây xanh',
-                           'NS_YELLOW': 'Bắc–Nam vàng', 'EW_YELLOW': 'Đông–Tây vàng',
+            phase_names = {'NS_GREEN': 'Bắc-Nam xanh', 'EW_GREEN': 'Đông-Tây xanh',
+                           'NS_YELLOW': 'Bắc-Nam vàng', 'EW_YELLOW': 'Đông-Tây vàng',
                            'ALL_RED': 'Hai hướng cùng đỏ, chuẩn bị đổi hướng'}
             self.events.append(dict(time=env.time, text=phase_names[row['phase']]+'.'))
         if self.finished:

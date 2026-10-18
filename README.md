@@ -1,8 +1,8 @@
-# Traffic Digital Twin — Demo giao lộ thông minh
+# Traffic Digital Twin - Demo giao lộ thông minh
 
 Demo Digital Twin nhỏ cho đồ án IoT/AIoT, chạy hoàn toàn trên máy cá nhân. **Bấm “Bắt đầu real-time”** để xem xe đến từng giây, cảm biến ảo cập nhật bản sao số, Twin tính phương án đèn và xe đi qua giao lộ.
 
-- Một giao lộ, hai nhóm hướng: Bắc–Nam (NS) và Đông–Tây (EW).
+- Một giao lộ, hai nhóm hướng: Bắc-Nam (NS) và Đông-Tây (EW).
 - Digital Twin có trạng thái riêng, nhận quan sát từ môi trường mô phỏng.
 - ML nhẹ: hồi quy Ridge học dần từ các lượt xe đã đến, không dùng dữ liệu tương lai.
 - So sánh ba bộ điều khiển trên cùng lượt xe: đèn cố định, điều chỉnh theo hàng đợi, Digital Twin + ML.
@@ -72,7 +72,7 @@ Repository có sẵn dữ liệu và log của một lần chạy. Trình khởi
 
 Dashboard chỉ có một cách chạy. Mở **http://localhost:8501** và bấm **▶ Bắt đầu real-time**.
 
-1. **Đã có xe chờ:** mở đầu lúc **07:00:35**, với **1 xe Bắc–Nam và 7 xe Đông–Tây**, lấy từ trạng thái mô phỏng sau 35 giây đầu. Đây là hàng đợi giả lập, không phải số xe chờ đo ngoài thực địa.
+1. **Đã có xe chờ:** mở đầu lúc **07:00:35**, với **1 xe Bắc-Nam và 7 xe Đông-Tây**, lấy từ trạng thái mô phỏng sau 35 giây đầu. Đây là hàng đợi giả lập, không phải số xe chờ đo ngoài thực địa.
 2. **Cảm biến đếm:** lần lượt tô sáng bước 1 → 2 → 3 → 4 → 5, mỗi bước ít nhất 2 giây. Xe đứng yên và đồng hồ tạm dừng trong phần giới thiệu.
 3. **Twin hiện số xe:** sau khi đồng bộ, các ô bên phải hiện đúng số xe vừa đếm. Tiếp theo hiển thị dự báo xe mới sẽ đến và điểm thử ba phương án xanh 15/30/45 giây.
 4. **Chọn đèn, xe đi và phản hồi:** áp dụng phương án được chọn, xe bắt đầu di chuyển. Mỗi giây cảm biến cập nhật Twin; hàng đợi có thể tăng hoặc giảm vì xe mới vẫn đến.
@@ -89,7 +89,7 @@ Dự báo và bảng điểm ghi thời điểm chọn đèn gần nhất. Bản
 
 ## 5. Dữ liệu và cách đọc kết quả
 
-Nguồn: [HCM Guide, Exhibit 2-27 — Shenendehowa Campus AM peak volumes](https://hcmguide.com/Case2/techprob03/subproblem03a/prob3a2.htm).
+Nguồn: [HCM Guide, Exhibit 2-27 - Shenendehowa Campus AM peak volumes](https://hcmguide.com/Case2/techprob03/subproblem03a/prob3a2.htm).
 
 - **Dữ liệu quan sát thật:** 8 tổng xe theo 15 phút từ 07:00 đến 09:00, tổng cộng 3.785 xe; giữ nguyên số xe nhỏ ở hướng Nam.
 - **Dữ liệu tổng hợp:** phân bổ xe vào 7.200 giây bằng multinomial, seed 42, bảo toàn chính xác tổng xe từng khoảng.

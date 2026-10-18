@@ -21,7 +21,7 @@ def load_artifacts():
 
 
 def main():
-    st.set_page_config(page_title='Mô phỏng đèn giao thông — Digital Twin', layout='wide')
+    st.set_page_config(page_title='Mô phỏng đèn giao thông - Digital Twin', layout='wide')
     st.markdown('<style>.block-container{padding-top:2rem}</style>', unsafe_allow_html=True)
     st.title('Mô phỏng điều khiển đèn giao thông bằng Digital Twin')
     st.write('Quan sát hàng đợi, lựa chọn thời gian đèn xanh và kết quả xe đi qua trong từng tình huống mô phỏng.')
@@ -53,7 +53,7 @@ def main():
     st.header('3. Xe trong demo đến từ đâu?')
     st.write('Nguồn công bố có **8 mốc đếm xe, mỗi mốc 15 phút, từ 07:00 đến 09:00**. Demo phân bổ các tổng xe này thành từng giây để tạo lượt xe đến. Số xe từng mốc được giữ nguyên.')
     with st.expander('Xem bảng dữ liệu gốc'):
-        st.markdown(f"Nguồn: [HCM Guide — Exhibit 2-27]({metadata['source_url']})")
+        st.markdown(f"Nguồn: [HCM Guide - Exhibit 2-27]({metadata['source_url']})")
         method = 'Đã lấy trực tiếp từ trang nguồn' if metadata['acquisition_method'] == 'web_extracted' else 'Dùng bảng dự phòng đã đối chiếu nguồn'
         st.write(method)
         if metadata['retrieval_error']:

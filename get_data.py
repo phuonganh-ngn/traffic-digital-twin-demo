@@ -29,7 +29,7 @@ def validate(df):
     if list(df.columns) != list(expected.columns) or len(df) != 8:
         raise ValueError('Expected exactly eight intervals with the specified columns')
     if df.start_time.tolist() != expected.start_time.tolist():
-        raise ValueError('Expected 07:00–08:45 at 15-minute intervals')
+        raise ValueError('Expected 07:00-08:45 at 15-minute intervals')
     numeric = df.drop(columns='start_time')
     if not ((numeric >= 0) & (numeric % 1 == 0)).all().all():
         raise ValueError('Counts must be nonnegative integers')
