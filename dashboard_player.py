@@ -20,7 +20,7 @@ def player_html(logs, decisions):
 
 TEMPLATE = r'''<!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><style>
-*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,sans-serif;color:#17283d;background:#f6f8fb}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,sans-serif;color:#17283d;background:transparent}
 .shell{border:1px solid #dce3ec;border-radius:20px;padding:22px;background:white}
 .top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.eyebrow{font-size:12px;letter-spacing:1px;color:#53718b;font-weight:700}.title{font-size:23px;font-weight:750;margin:4px 0}.muted{color:#64748b;font-size:13px}
 button{border:0;border-radius:12px;padding:13px 24px;background:#165bd8;color:white;font-size:17px;font-weight:700;cursor:pointer}button:hover{background:#104bb7}button.secondary{background:#eaf0f7;color:#334155;font-size:13px;padding:10px 14px}.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}button:disabled{opacity:.4;cursor:default}
@@ -263,5 +263,23 @@ function reset(){clearTimeout(timer);document.getAnimations().forEach(a=>a.cance
 $('play').onclick=()=>{if(finished)reset();running=!running;clearTimeout(timer);$('play').textContent=running?'Ⅱ Tạm dừng':'▶ Tiếp tục';render();document.getAnimations().forEach(a=>running?a.play():a.pause());if(running)schedule();};
 $('reset').onclick=reset;
 $('next-case').onclick=()=>{if(!finished||round>=data.decisions.length-1)return;round++;reset();};
+function fitPlayerHeight(){
+ // The HTML player shares this page's origin. Resize only its iframe and wrapper.
+ try{
+  const iframe=window.frameElement;
+  if(!iframe)return;
+  const height=Math.ceil(document.querySelector('.shell').getBoundingClientRect().height)+2;
+  const wrapper=iframe.closest('[data-testid="stElementContainer"]');
+  if(iframe.style.height!==height+'px')iframe.style.height=height+'px';
+  if(wrapper){
+   wrapper.style.flex='0 0 auto';
+   wrapper.style.minHeight='0px';
+   if(wrapper.style.height!==height+'px')wrapper.style.height=height+'px';
+  }
+ }catch(error){/* A standalone/cross-origin preview keeps its scrollable fallback. */}
+}
+if('ResizeObserver' in window)new ResizeObserver(()=>requestAnimationFrame(fitPlayerHeight)).observe(document.querySelector('.shell'));
+window.addEventListener('resize',()=>requestAnimationFrame(fitPlayerHeight));
 render();
+requestAnimationFrame(fitPlayerHeight);
 </script></body></html>'''
