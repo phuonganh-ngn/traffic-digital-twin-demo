@@ -81,7 +81,7 @@ Repository có sẵn dữ liệu và log của một lần chạy. Trình khởi
 6. Đoạn demo phát lại **5 quyết định**, bắt đầu sau giai đoạn học ban đầu của ML, rồi tự dừng. Đoạn xe di chuyển ở tốc độ **2×**; các bước giải thích tạm dừng đồng hồ mô phỏng để người xem đọc.
 7. Kéo xuống xem bảng so sánh ba bộ điều khiển. Mở các mục thu gọn để xem biểu đồ, dữ liệu nguồn và giải thích kỹ thuật.
 
-Xe đầu hàng đi qua khi được phục vụ, xe sau tiến lên và xe mới nhập cuối hàng. Hàng đợi chỉ vẽ tối đa **4 xe mỗi nhóm** để hình dễ đọc; **số đếm mới là hàng đợi đầy đủ**. Xe đã đi qua vạch tiếp tục ra khỏi khung. Hai đường minh họa hai nhóm hướng, không tái tạo chính xác làn đường/hướng rẽ của giao lộ nguồn.
+Xe đầu hàng đi qua khi được phục vụ, xe sau tiến lên và xe mới nhập cuối hàng. Mỗi hình xe tương ứng **đúng 1 xe**. Dashboard vẽ đầy đủ số xe chờ, tự điều chỉnh kích thước để hàng đợi vừa khung. Mỗi giây thêm đúng số xe đến rồi cho đúng số xe được phục vụ đi qua; số lượt NS/EW đi qua từ đầu đoạn demo được hiển thị riêng. Xe đã đi qua vạch tiếp tục ra khỏi khung. Hai đường minh họa hai nhóm hướng, không tái tạo chính xác làn đường/hướng rẽ của giao lộ nguồn.
 
 **Gợi ý lời giới thiệu:** “Giao lộ mô phỏng gửi số xe chờ cho một bản sao số. Bản sao dùng ML ước lượng xe sắp đến, thử ba thời lượng đèn xanh rồi chọn phương án có tổng chờ dự báo thấp nhất. Sau khi áp dụng, giao lộ gửi quan sát mới trở lại bản sao.”
 
