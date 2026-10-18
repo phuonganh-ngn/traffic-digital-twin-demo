@@ -75,13 +75,15 @@ Repository có sẵn dữ liệu và log của một lần chạy. Trình khởi
 
    **Hàng đợi ban đầu → Quan sát → Đồng bộ bản sao → Dự báo và thử đèn → Chọn đèn → Xe đi → Phản hồi và dừng**
 
-3. Bên trái là giao lộ, xe chờ, đèn đỏ–vàng–xanh và giây còn lại của pha. Bên phải là bản sao số, lưu lượng dự báo và điểm của ba phương án xanh 15/30/45 giây. Lời giải thích tiếng Việt tự thay đổi theo từng bước.
+3. Bên trái là giao lộ, xe chờ, đèn đỏ–vàng–xanh và giây còn lại của pha. Bên phải là bản sao số ở lần đồng bộ gần nhất, lưu lượng xe mới dự báo và điểm của ba phương án xanh 15/30/45 giây. Khi Twin khác giao lộ, khung cảnh báo ghi rõ hai số xe và tuổi bản sao: Twin cập nhật mỗi 10 giây nên có thể chậm hơn giao lộ. Lời giải thích tiếng Việt tự thay đổi theo từng bước.
 4. Phía trên có **khung giờ của case hiện tại**, **giờ đang xem**, **case hiện tại trên tổng số case** và **số thứ tự quyết định trên toàn buổi 07:00–09:00**. Ví dụ “Case 1/5” và “Lượt 4/207 của cả buổi” là hai số đếm khác nhau.
 5. Bấm **Ⅱ Tạm dừng** để đọc hoặc giải thích; bấm **▶ Tiếp tục** để chạy tiếp. **↺ Xem lại case** trở về đầu case hiện tại và chờ bấm bắt đầu.
 6. Demo có **5 case độc lập**, bắt đầu sau giai đoạn học ban đầu của ML. Mỗi case nạp snapshot hàng đợi riêng, chọn đèn, phát lại đúng khoảng xanh đã chọn, hiện bảng phản hồi (ban đầu + xe đến − xe đi = còn chờ) rồi dừng. Bấm **Case tiếp theo →** mới mở case khác; case mới chờ bấm bắt đầu, không tự chạy nối tiếp. Bộ đếm xe đi qua được tính lại từ 0 cho từng case. Đoạn xe di chuyển ở tốc độ **2×**; các bước giải thích tạm dừng đồng hồ mô phỏng để người xem đọc.
 7. Kéo xuống xem bảng so sánh ba bộ điều khiển. Mở các mục thu gọn để xem biểu đồ, dữ liệu nguồn và giải thích kỹ thuật.
 
 Xe đầu hàng đi qua khi được phục vụ, xe sau tiến lên và xe mới nhập cuối hàng. Mỗi hình xe tương ứng **đúng 1 xe**. Dashboard vẽ đầy đủ số xe chờ, tự điều chỉnh kích thước để hàng đợi vừa khung. Mỗi giây thêm đúng số xe đến rồi cho đúng số xe được phục vụ đi qua; số lượt NS/EW đi qua trong case hiện tại được hiển thị riêng. Xe đã đi qua vạch tiếp tục ra khỏi khung. Hai đường minh họa hai nhóm hướng, không tái tạo chính xác làn đường/hướng rẽ của giao lộ nguồn.
+
+Dưới giao lộ, mục **“Vì sao hết xe rồi lại có xe chờ?”** ghi phép tính của từng hướng: xe ban đầu + xe mới đến − xe đã đi = xe đang chờ. Nhật ký lưu các mốc xuất hiện hàng đợi mới hoặc hàng đợi về 0; lời giải thích của từng giây cho biết xe nào mới đến, xe nào được đi và hướng nào phải chờ đèn đỏ. Ví dụ case 1 có 7 xe Đông–Tây ban đầu, thêm 15 xe trong khoảng xanh và phục vụ 22 xe, nên cuối case còn 0 xe Đông–Tây; 1 xe Bắc–Nam mới đến vẫn chờ đèn đỏ.
 
 **Gợi ý lời giới thiệu:** “Giao lộ mô phỏng gửi số xe chờ cho một bản sao số. Bản sao dùng ML ước lượng xe sắp đến, thử ba thời lượng đèn xanh rồi chọn phương án có tổng chờ dự báo thấp nhất. Sau khi áp dụng, giao lộ gửi quan sát mới trở lại bản sao.”
 

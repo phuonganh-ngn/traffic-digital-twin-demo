@@ -33,7 +33,7 @@ def main():
         st.stop()
 
     st.header('1. Bấm bắt đầu để xem từng case')
-    components.html(player_html(logs['digital_twin'], decisions), height=1140, scrolling=True)
+    components.html(player_html(logs['digital_twin'], decisions), height=1510, scrolling=True)
     st.caption('Demo minh họa: Python thay giao lộ thật; cảm biến là cảm biến ảo. Hình xe phát lại kết quả đã mô phỏng, không phải camera hoặc dữ liệu giao thông trực tiếp.')
 
     st.header('2. Cách này có giúp xe bớt chờ không?')
