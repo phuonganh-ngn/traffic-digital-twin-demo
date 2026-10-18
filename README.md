@@ -1,12 +1,8 @@
 # Traffic Digital Twin - Demo giao lộ thông minh
 
-Mô phỏng một giao lộ có hai nhóm hướng Bắc-Nam và Đông-Tây. Chương trình đếm xe đang chờ, cập nhật vào Digital Twin rồi thử các thời lượng đèn xanh để chọn phương án. Chạy trên máy cá nhân và xem qua dashboard Streamlit.
+Dự án mô phỏng việc điều khiển đèn giao thông tại một giao lộ gồm hai nhóm hướng Bắc-Nam (NS) và Đông-Tây (EW). Số xe đang chờ được cảm biến ảo ghi nhận và gửi về Digital Twin để cập nhật trạng thái giao lộ. Từ dữ liệu xe đã quan sát, mô hình hồi quy Ridge ước lượng lượng xe sắp đến. Twin dùng dự báo này để thử các thời lượng đèn xanh và chọn phương án có tổng thời gian chờ dự kiến thấp nhất.
 
-- Một giao lộ, hai nhóm hướng: Bắc-Nam (NS) và Đông-Tây (EW).
-- Digital Twin có trạng thái riêng, nhận quan sát từ môi trường mô phỏng.
-- ML nhẹ: hồi quy Ridge học dần từ các lượt xe đã đến, không dùng dữ liệu tương lai.
-- So sánh ba bộ điều khiển trên cùng lượt xe: đèn cố định, điều chỉnh theo hàng đợi, Digital Twin + ML.
-- Không cần GPU, phần cứng IoT, camera, database hay dịch vụ trả phí.
+Dashboard Streamlit hiển thị xe đến, chờ đèn, đi qua giao lộ và quá trình cập nhật phản hồi về Twin. Dự án cũng so sánh kết quả của ba cách điều khiển trên cùng lượng xe: đèn cố định, điều chỉnh theo hàng đợi và Digital Twin kết hợp ML. Toàn bộ chương trình chạy trên máy cá nhân, không cần phần cứng IoT hay GPU.
 
 ## 1. Chuẩn bị
 
