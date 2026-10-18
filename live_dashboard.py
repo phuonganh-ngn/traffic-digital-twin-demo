@@ -13,7 +13,6 @@ def live_html():
     drawing = script[:script.index('function explainTraffic')]
     dummy = dict(frames=[dict(time=0, queue_NS=0, queue_EW=0)], decisions=[], end=7200)
     drawing = drawing.replace('__DATA__', json.dumps(dummy))
-    markup = markup.replace('<div class="top">', '<div class="top"><div><div class="eyebrow">GIẢ LẬP THỜI GIAN THỰC · CẢM BIẾN ẢO</div><div class="title">Giao lộ hoạt động liên tục</div><div class="muted">Đã có xe chờ sẵn. Lượt đầu: đếm xe → đồng bộ Twin → chọn đèn → xe đi và phản hồi. Sau đó hệ thống tự chạy real-time liên tục.</div></div>', 1)
     markup = markup.replace('▶ Bắt đầu case', '▶ Bắt đầu real-time').replace('↺ Xem lại case', '↺ Chạy lại từ đầu').replace('Khởi động lại case hiện tại', 'Bắt đầu lại với hàng đợi ban đầu')
     markup = markup.replace('<button id="next-case" class="secondary" disabled>Case tiếp theo →</button>', '')
     markup = markup.replace('KHUNG GIỜ CASE NÀY', 'KHUNG GIỜ MÔ PHỎNG').replace('CASE ĐANG XEM', 'QUYẾT ĐỊNH ĐÈN')
