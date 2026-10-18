@@ -35,12 +35,14 @@ Python sau khi cài vẫn phải từ 3.11 trở lên. Nếu máy đã có `uv`,
 
 ## 2. Tải mã nguồn
 
-Trên trang repository, chọn **Code → sao chép URL HTTPS**, rồi thay `URL_REPOSITORY` trong lệnh sau:
+Tải repository bằng HTTPS:
 
 ```bash
-git clone URL_REPOSITORY traffic-digital-twin-demo
+git clone https://github.com/phuonganh-ngn/traffic-digital-twin-demo.git
 cd traffic-digital-twin-demo
 ```
+
+Nếu tài khoản đã có SSH key trên GitHub, có thể dùng `git clone git@github.com:phuonganh-ngn/traffic-digital-twin-demo.git`.
 
 Hoặc chọn **Code → Download ZIP**, giải nén rồi mở Terminal/PowerShell trong thư mục chứa `start.py`.
 
