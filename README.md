@@ -175,7 +175,7 @@ Thường chỉ cần `start.py`. Nếu muốn chạy lại từng bước sau k
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-`get_data.py` yêu cầu lấy lại bảng nguồn và ghi lại metadata. `run_demo.py` tạo lại CSV kết quả và [báo cáo mục 2.7](docs/REPORT_SECTION_2_7.md). Bộ test kiểm tra bảng nguồn, bảo toàn số xe, chu kỳ đèn, đầu vào giống nhau, Twin tách biệt, không dùng tương lai và dashboard đọc đúng log. Lần kiểm tra hiện tại: **15 tests pass**. Playwright chỉ được dùng khi phát triển để kiểm tra giao diện, không cần cài để chạy demo.
+`get_data.py` yêu cầu lấy lại bảng nguồn và ghi lại metadata. `run_demo.py` tạo lại CSV kết quả và [báo cáo mục 2.7](docs/REPORT_SECTION_2_7.md). Bộ test kiểm tra bảng nguồn, bảo toàn số xe, chu kỳ đèn, đầu vào giống nhau, Twin tách biệt, không dùng tương lai và dashboard đọc đúng log. Lần kiểm tra hiện tại: **16 tests pass**. Playwright chỉ được dùng khi phát triển để kiểm tra giao diện, không cần cài để chạy demo.
 
 ## 8. Lỗi thường gặp
 

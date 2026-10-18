@@ -148,6 +148,8 @@ def show_realtime():
                 runtime.pause()
             elif action.get('action') == 'reset':
                 runtime.reset()
-            st.rerun(scope='fragment')
+            # Controls can arrive during a full-page reconnect as well as a
+            # fragment heartbeat; an app rerun is valid in both contexts.
+            st.rerun()
 
     heartbeat()

@@ -237,3 +237,22 @@ def test_realtime_clock_keeps_fractional_seconds():
     simulation.poll(now=100)
     assert simulation.environment.time == 8  # Bounded catch-up, without skipping input.
     assert simulation.environment.arrived['EW'] == 8
+
+
+def test_realtime_control_on_full_page_run(monkeypatch):
+    import streamlit.components.v1 as components
+    from streamlit.testing.v1 import AppTest
+    calls = []
+
+    def declare(*args, **kwargs):
+        def widget(**values):
+            calls.append(values['state'])
+            return {'id': 'reconnect-reset', 'action': 'reset'} if len(calls) == 1 else None
+        return widget
+
+    monkeypatch.setattr(components, 'declare_component', declare)
+    app = AppTest.from_file(str(ROOT / 'app.py')).run(timeout=30)
+    assert not app.exception
+    assert len(calls) >= 2
+    assert calls[-1]['current']['time'] == 0
+    assert calls[-1]['epoch'] != calls[0]['epoch']
