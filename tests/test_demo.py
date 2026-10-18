@@ -159,7 +159,7 @@ def test_dashboard_loads_saved_logs():
 
 def test_realtime_clock_pause_and_reset():
     from realtime import RealtimeSimulation
-    simulation = RealtimeSimulation([(1, 2)] * 120)
+    simulation = RealtimeSimulation([(1, 2)] * 120, explain_steps=False)
     simulation.start(now=10)
     simulation.poll(now=10.9)
     assert simulation.environment.time == 0
@@ -224,7 +224,7 @@ def test_realtime_complete_run_matches_saved_experiment():
 
 def test_realtime_clock_keeps_fractional_seconds():
     from realtime import RealtimeSimulation
-    simulation = RealtimeSimulation([(0, 1)] * 120)
+    simulation = RealtimeSimulation([(0, 1)] * 120, explain_steps=False)
     simulation.start(now=0)
     simulation.poll(now=0.99)
     assert simulation.environment.time == 0
@@ -256,3 +256,38 @@ def test_realtime_control_on_full_page_run(monkeypatch):
     assert len(calls) >= 2
     assert calls[-1]['current']['time'] == 0
     assert calls[-1]['epoch'] != calls[0]['epoch']
+
+
+def test_realtime_shows_every_step_before_cars_move():
+    from realtime import RealtimeSimulation
+    simulation = RealtimeSimulation([(0, 1)] * 120)
+    simulation.start(now=0)
+    assert simulation.snapshot()['flow_stage'] == 0
+    for step in range(1, 5):
+        simulation.poll(now=step*2)
+        snapshot = simulation.snapshot()
+        assert snapshot['flow_stage'] == step
+        assert snapshot['preparing']
+        assert simulation.environment.time == 0
+        assert simulation.environment.arrived == {'NS': 0, 'EW': 0}
+        if step == 3:
+            assert snapshot['decision'] is not None  # What-if scores, not applied yet.
+            assert simulation.environment.signal.needs_plan
+    simulation.poll(now=10)
+    assert simulation.snapshot()['flow_stage'] == 5
+    assert simulation.environment.time == 1
+    assert simulation.decision_count == 1
+    while simulation.environment.time < 35:
+        simulation.advance()
+    before = simulation.environment.queues.copy()
+    simulation.poll(now=12)
+    assert simulation.snapshot()['flow_stage'] == 0
+    for step in range(1, 5):
+        simulation.poll(now=12+step*2)
+        assert simulation.snapshot()['flow_stage'] == step
+        assert simulation.environment.time == 35
+        assert simulation.environment.queues == before
+    simulation.poll(now=22)
+    assert simulation.snapshot()['flow_stage'] == 5
+    assert simulation.environment.time == 36
+    assert simulation.decision_count == 2

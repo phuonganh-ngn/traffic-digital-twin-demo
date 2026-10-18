@@ -73,7 +73,7 @@ Repository có sẵn dữ liệu và log của một lần chạy. Trình khởi
 ### Giả lập thời gian thực — chế độ mặc định
 
 1. Mở **http://localhost:8501**, chọn **Giả lập thời gian thực** và bấm **▶ Bắt đầu real-time**.
-2. Đồng hồ bắt đầu lúc **07:00:00** với hàng đợi rỗng. Khoảng **1 giây mô phỏng tương ứng 1 giây thực** khi trang đang kết nối. Ban đầu có thể chưa có xe; xe xuất hiện khi đến lượt trong chuỗi giả lập.
+2. Đồng hồ bắt đầu lúc **07:00:00** với hàng đợi rỗng. Mỗi lượt hiện rõ bước 1 → 2 → 3 → 4 → 5 (ít nhất 2 giây mỗi bước), rồi xe mới chạy ở bước 6 và gửi phản hồi. Trong các bước giải thích, đồng hồ mô phỏng tạm dừng; trong đoạn xe chạy, khoảng **1 giây mô phỏng tương ứng 1 giây thực** khi trang đang kết nối. Ban đầu có thể chưa có xe; xe xuất hiện khi đến lượt trong chuỗi giả lập.
 3. Mỗi giây, Python thêm lượt xe đến, phục vụ tối đa 1 xe ở hướng xanh, rồi cảm biến ảo gửi hàng đợi cho **Twin riêng biệt**. Đây là tính toán đang diễn ra, không phát lại quyết định có sẵn trong log.
 4. Khi bắt đầu một pha xanh, Twin học từ dữ liệu đã quan sát, thử 15/30/45 giây và gửi lựa chọn cho bộ điều khiển. Đèn tự đi qua **xanh → vàng 3 giây → hai hướng đỏ 2 giây → hướng còn lại xanh**, chạy liên tục.
 5. Bấm **Ⅱ Tạm dừng** để dừng đồng hồ và xe; **▶ Tiếp tục real-time** để chạy tiếp. **↺ Chạy lại từ 07:00** đặt lại hàng đợi, ML, bộ đếm và đồng hồ từ đầu, rồi chờ bấm chạy.
@@ -175,7 +175,7 @@ Thường chỉ cần `start.py`. Nếu muốn chạy lại từng bước sau k
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-`get_data.py` yêu cầu lấy lại bảng nguồn và ghi lại metadata. `run_demo.py` tạo lại CSV kết quả và [báo cáo mục 2.7](docs/REPORT_SECTION_2_7.md). Bộ test kiểm tra bảng nguồn, bảo toàn số xe, chu kỳ đèn, đầu vào giống nhau, Twin tách biệt, không dùng tương lai và dashboard đọc đúng log. Lần kiểm tra hiện tại: **16 tests pass**. Playwright chỉ được dùng khi phát triển để kiểm tra giao diện, không cần cài để chạy demo.
+`get_data.py` yêu cầu lấy lại bảng nguồn và ghi lại metadata. `run_demo.py` tạo lại CSV kết quả và [báo cáo mục 2.7](docs/REPORT_SECTION_2_7.md). Bộ test kiểm tra bảng nguồn, bảo toàn số xe, chu kỳ đèn, đầu vào giống nhau, Twin tách biệt, không dùng tương lai và dashboard đọc đúng log. Lần kiểm tra hiện tại: **17 tests pass**. Playwright chỉ được dùng khi phát triển để kiểm tra giao diện, không cần cài để chạy demo.
 
 ## 8. Lỗi thường gặp
 

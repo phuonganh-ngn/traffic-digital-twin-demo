@@ -15,7 +15,7 @@ def live_html():
     drawing = drawing.replace('__DATA__', json.dumps(dummy))
     markup = markup.replace('MỘT GIAO LỘ · MỘT VÒNG ĐIỀU KHIỂN', 'GIẢ LẬP THỜI GIAN THỰC · CẢM BIẾN ẢO')
     markup = markup.replace('Xe đang chờ. Twin sẽ chọn đèn thế nào?', 'Giao lộ hoạt động liên tục')
-    markup = markup.replace('Mỗi case bắt đầu từ một hàng đợi riêng. Xem chọn đèn, xe đi qua và phản hồi; demo dừng ở cuối case.', 'Bấm bắt đầu: xe đến từng giây, cảm biến đếm xe, Twin chọn đèn. 1 giây mô phỏng ≈ 1 giây thực.')
+    markup = markup.replace('Mỗi case bắt đầu từ một hàng đợi riêng. Xem chọn đèn, xe đi qua và phản hồi; demo dừng ở cuối case.', 'Mỗi lượt đi qua rõ các bước 1–5 rồi xe mới chạy và phản hồi. Đồng hồ tạm dừng khi giải thích; đoạn xe chạy ở tốc độ 1×.')
     markup = markup.replace('▶ Bắt đầu case', '▶ Bắt đầu real-time').replace('↺ Xem lại case', '↺ Chạy lại từ 07:00').replace('Khởi động lại case hiện tại', 'Bắt đầu lại mô phỏng từ 07:00')
     markup = markup.replace('<button id="next-case" class="secondary" disabled>Case tiếp theo →</button>', '')
     markup = markup.replace('KHUNG GIỜ CASE NÀY', 'KHUNG GIỜ MÔ PHỎNG').replace('CASE ĐANG XEM', 'QUYẾT ĐỊNH ĐÈN')
@@ -46,7 +46,7 @@ function liveHeight(){
 if('ResizeObserver' in window)new ResizeObserver(()=>requestAnimationFrame(liveHeight)).observe(document.querySelector('.shell'));
 window.addEventListener('resize',()=>requestAnimationFrame(liveHeight));
 function renderLive(s){
- const row=s.current,d=s.decision;
+ const row=s.current,d=s.decision,flowStage=s.flow_stage??5,preparing=s.preparing;
  if(liveEpoch!==s.epoch){clearLiveCars();queueLayout.NS.step=32;queueLayout.EW.step=36;liveEpoch=s.epoch;}
  for(const r of s.frames)frames.set(r.time,r);
  // Reconnection uses the current sensor snapshot; do not invent missed animations.
@@ -60,7 +60,7 @@ function renderLive(s){
   queueLayout[g].scale=queueLayout[g].step/normal;
  }
  running=s.running;stage=5;
- document.getAnimations().forEach(a=>running?a.play():a.pause());
+ document.getAnimations().forEach(a=>running&&!preparing?a.play():a.pause());
  updateCars(row,true);resizeCars();
  replayServed.NS=s.total_served.NS;replayServed.EW=s.total_served.EW;
  // Bound the browser-side packet buffer; the Python model owns the full state.
@@ -71,13 +71,14 @@ function renderLive(s){
  $('ns').textContent=`Bắc–Nam: ${row.queue_NS} xe chờ`;$('ew').textContent=`Đông–Tây: ${row.queue_EW} xe chờ`;
  $('clock').textContent='1 hình xe = 1 xe · số đếm cảm biến ảo';
  $('window').textContent='07:00:00–09:00:00';$('now').textContent=clock(row.time);
- $('round').textContent=s.decision_count?'Lần '+s.decision_count:'Chờ bắt đầu';
+ $('round').textContent='Lượt '+(s.decision_count+(preparing&&flowStage<4?1:0));
  $('global-round').textContent='Tự chọn lại ở đầu mỗi pha xanh';
- $('play-status').textContent=s.finished?'Đã kết thúc · xem số xe còn chờ':running?'Đang chạy · 1 giây mô phỏng ≈ 1 giây thực':'Đang dừng · đồng hồ mô phỏng không chạy';
+ $('play-status').textContent=s.finished?'Đã kết thúc · xem số xe còn chờ':running?(preparing?'Đang giải thích bước '+(flowStage+1)+' · đồng hồ mô phỏng tạm dừng':'Xe đang chạy · 1 giây mô phỏng ≈ 1 giây thực'):'Đang dừng · đồng hồ mô phỏng không chạy';
  $('progress').style.width=(row.time/s.duration*100)+'%';
- const justDecided=d&&row.time===d.time+1;
- const labels=['Xe đến','Cảm biến đếm','Đồng bộ Twin','Thử phương án','Điều khiển đèn','Phản hồi'];
- $('flow').innerHTML=labels.map((text,i)=>`<div class="step ${i===(justDecided?4:5)?'active':'done'}">${i+1}. ${text}${i<5?' →':''}</div>`).join('');
+ const justDecided=preparing&&flowStage>=2&&flowStage<=4;
+ const showForecast=!!d&&flowStage>=3,showChoice=showForecast&&flowStage>=4;
+ const labels=['Xe đang chờ','Cảm biến đếm','Đồng bộ Twin','Thử phương án','Chọn đèn','Xe đi & phản hồi'];
+ $('flow').innerHTML=labels.map((text,i)=>`<div class="step ${i===flowStage?'active':i<flowStage?'done':''}">${i+1}. ${text}${i<5?' →':''}</div>`).join('');
  for(const g of ['NS','EW']){
   const light=$('light-'+g.toLowerCase()),state=row.phase===g+'_GREEN'?'green':row.phase===g+'_YELLOW'?'yellow':'red';
   light.dataset.state=state;light.setAttribute('aria-label',`${g==='NS'?'Bắc–Nam':'Đông–Tây'}: đèn ${{green:'xanh',yellow:'vàng',red:'đỏ'}[state]}`);
@@ -92,24 +93,35 @@ function renderLive(s){
  $('phase-status').textContent=phaseText;$('phase-status').dataset.tone=tone;
  $('served-count').textContent=`Đã đi qua từ 07:00: Bắc–Nam ${s.total_served.NS} xe · Đông–Tây ${s.total_served.EW} xe.`;
  $('road-note').textContent=`Giây ${clock(row.time)}: xe mới đến NS +${row.arrivals_NS}, EW +${row.arrivals_EW}; đi qua NS ${row.served_NS}, EW ${row.served_EW}. Đèn đỏ thì xe mới đến phải chờ.`;
- $('t-ns').textContent=row.twin_queue_NS;$('t-ew').textContent=row.twin_queue_EW;
- $('sync').textContent=`Cảm biến gửi lúc ${clock(row.observation_time)} · Twin nhận số xe sau mỗi giây mô phỏng.`;
- $('sync-notice').hidden=false;$('sync-notice').dataset.stale='false';
+ $('t-ns').textContent=flowStage>=2?row.twin_queue_NS:'—';$('t-ew').textContent=flowStage>=2?row.twin_queue_EW:'—';
+ $('sync').textContent=flowStage>=2?`Cảm biến gửi lúc ${clock(row.observation_time)} · Twin đã đồng bộ số xe.`:flowStage===1?'Cảm biến đang đếm xe để gửi về Twin.':'Chưa đến bước nhận quan sát của lượt này.';
+ $('sync-notice').hidden=flowStage<2;$('sync-notice').dataset.stale='false';
  $('sync-notice').textContent='Hai trạng thái được lưu riêng. Bản sao khớp giao lộ sau gói quan sát mới nhất.';
  $('twin').classList.toggle('active',justDecided);
  const group=d?(d.phase.startsWith('NS')?'Bắc–Nam':'Đông–Tây'):'';
  const opposite=d?(d.phase.startsWith('NS')?'Đông–Tây':'Bắc–Nam'):'';
- $('forecast').textContent=d?`Dự báo dùng lúc chọn đèn ${clock(d.time)}\nBắc–Nam: ${(d.rate_NS*60).toFixed(1)} xe MỚI/phút\nĐông–Tây: ${(d.rate_EW*60).toFixed(1)} xe MỚI/phút`:'';
- $('forecast-help').textContent=d?`${d.forecast_method==='past_mean_warmup'?'ML đang học ban đầu; tạm dùng trung bình xe đã đến.':'ML dùng các lượt xe đã quan sát để dự báo.'} Dự báo xe mới đến khác với số xe đang chờ. Hiện có ${s.training_samples} mẫu học.`:'Bắt đầu từ hàng đợi rỗng; mô hình chỉ học khi xe đã xuất hiện.';
- $('signal-plan').textContent=d?`Quyết định gần nhất: ${group} XANH ${d.chosen_green} giây · ${opposite} ĐỎ`:'';
- $('candidates').innerHTML=d?[15,30,45].map(g=>`<div class="candidate ${g===d.chosen_green?'chosen':''}"><strong>${g} giây</strong>đèn xanh<br>Điểm chờ<br>${num(d['score_'+g])}${g===d.chosen_green?'<br>✓ Được chọn':''}</div>`).join(''):'';
- $('signal-help').textContent=d?'Thời lượng xanh dành cho cả nhóm hướng. Hết xanh phải qua vàng 3 giây và đỏ toàn bộ 2 giây, rồi Twin mới chọn cho hướng tiếp theo.':'';
- $('candidate-note').textContent=d?'Điểm chờ dự báo trên cùng 120 giây; chọn điểm thấp nhất. Đây là lần thử mới do Python vừa tính, không đọc quyết định từ log.':'';
- $('heading').textContent=s.finished?'Mô phỏng đã kết thúc':!running?'Sẵn sàng chạy giao lộ liên tục':justDecided?'Twin vừa chọn phương án đèn mới':'Cảm biến → Twin → đèn → phản hồi đang chạy liên tục';
- $('explain').textContent=s.finished?`Đã hết 7.200 giây; còn ${row.queue_NS} xe Bắc–Nam và ${row.queue_EW} xe Đông–Tây chờ. Bấm chạy lại để bắt đầu từ 07:00.`:!running?'Bấm bắt đầu hoặc tiếp tục. Khi chạy, mỗi giây thêm xe, phục vụ xe ở hướng xanh, cảm biến đếm hàng đợi và gửi về Twin.':d?`Hiện đang áp dụng quyết định ${group} xanh ${d.chosen_green} giây. Xe mới vẫn đến, hàng đợi có thể tăng hoặc giảm. Khi hết xanh/vàng/đỏ, hệ thống tự chọn cho hướng còn lại, không cần chuyển case.`:'Đang chờ giây mô phỏng đầu tiên.';
+ $('forecast').textContent=showForecast?`Dự báo dùng lúc chọn đèn ${clock(d.time)}\nBắc–Nam: ${(d.rate_NS*60).toFixed(1)} xe MỚI/phút\nĐông–Tây: ${(d.rate_EW*60).toFixed(1)} xe MỚI/phút`:'';
+ $('forecast-help').textContent=showForecast?`${d.forecast_method==='past_mean_warmup'?'ML đang học ban đầu; tạm dùng trung bình xe đã đến.':'ML dùng các lượt xe đã quan sát để dự báo.'} Dự báo xe mới đến khác với số xe đang chờ. Hiện có ${s.training_samples} mẫu học.`:'Bắt đầu từ hàng đợi rỗng; mô hình chỉ học khi xe đã xuất hiện.';
+ $('signal-plan').textContent=showChoice?`Đã chọn: ${group} XANH ${d.chosen_green} giây · ${opposite} ĐỎ`:showForecast?`Đang thử 3 phương án xanh cho ${group}`:'';
+ $('candidates').innerHTML=showForecast?[15,30,45].map(g=>`<div class="candidate ${showChoice&&g===d.chosen_green?'chosen':''}"><strong>${g} giây</strong>đèn xanh<br>Điểm chờ<br>${num(d['score_'+g])}${showChoice&&g===d.chosen_green?'<br>✓ Được chọn':''}</div>`).join(''):'';
+ $('signal-help').textContent=showForecast?'Thời lượng xanh dành cho cả nhóm hướng. Hết xanh phải qua vàng 3 giây và đỏ toàn bộ 2 giây, rồi Twin mới chọn cho hướng tiếp theo.':'';
+ $('candidate-note').textContent=showForecast?'Điểm chờ dự báo trên cùng 120 giây; chọn điểm thấp nhất. Đây là lần thử mới do Python vừa tính, không đọc quyết định từ log.':'';
+ const upcoming=s.next_group==='NS'?'Bắc–Nam':'Đông–Tây';
+ const headings=['1. Xe đang chờ tại giao lộ','2. Cảm biến quan sát và đếm xe','3. Đồng bộ hàng đợi vào Twin','4. Dự báo và thử 15 / 30 / 45 giây','5. Chọn thời lượng đèn xanh','6. Xe đi qua và gửi phản hồi'];
+ const explanations=[
+  `Lượt này bắt đầu với ${row.queue_NS} xe Bắc–Nam và ${row.queue_EW} xe Đông–Tây đang chờ. Xe đứng yên trong lúc giải thích; chưa áp dụng đèn mới.`,
+  `Cảm biến ảo đếm được Bắc–Nam ${row.queue_NS} xe, Đông–Tây ${row.queue_EW} xe và gửi số xe cùng thời điểm ${clock(row.time)} cho Twin.`,
+  `Twin cập nhật bản sao riêng: Bắc–Nam ${row.twin_queue_NS} xe, Đông–Tây ${row.twin_queue_EW} xe. Hai số này đến từ quan sát, không lấy từ lượt xe tương lai.`,
+  `Twin dự báo xe mới sắp đến từ dữ liệu đã quan sát, rồi thử cho nhóm ${upcoming} xanh 15, 30 hoặc 45 giây trên cùng 120 giây tương lai. Xe ở giao lộ chưa chạy.`,
+  `Đã chọn ${group} XANH ${d?.chosen_green??0} giây; ${opposite} ĐỎ. Phương án có điểm chờ thấp nhất được gửi cho bộ điều khiển. Sau bước này xe mới bắt đầu đi.`,
+  `Đèn ${group} xanh theo thời lượng đã chọn. Xe đến và đi từng giây; cảm biến gửi hàng đợi mới về Twin làm phản hồi. Hết xanh/vàng/đỏ, lượt kế tiếp tự quay về bước 1.`
+ ];
+ $('heading').textContent=s.finished?'Mô phỏng đã kết thúc':headings[flowStage];
+ $('explain').textContent=s.finished?`Đã hết 7.200 giây; còn ${row.queue_NS} xe Bắc–Nam và ${row.queue_EW} xe Đông–Tây chờ.`:explanations[flowStage]+(!running?' Bấm nút bắt đầu/tiếp tục để đi qua từng bước.':'');
+ if(preparing){$('phase-status').textContent=`Bước ${flowStage+1}/5 · xe chưa chạy, đồng hồ mô phỏng tạm dừng`;}
  $('traffic-story').hidden=false;
  $('traffic-story').innerHTML='<strong>Xe đến và đi trong lượt chạy này</strong>'+['NS','EW'].map(g=>`<p><b>${g==='NS'?'Bắc–Nam':'Đông–Tây'}:</b> ${s.total_arrived[g]} xe đã đến − ${s.total_served[g]} xe đã qua = <b>${row['queue_'+g]} xe còn chờ</b>.</p>`).join('')+'<strong style="margin-top:10px">Các sự kiện mới nhất</strong><ul>'+s.events.slice(-5).map(event=>`<li><b>${clock(event.time)}</b> · ${event.text}</li>`).join('')+'</ul>';
- if(!running)document.getAnimations().forEach(a=>a.pause());
+ if(!running||preparing)document.getAnimations().forEach(a=>a.pause());
  liveState=s;requestAnimationFrame(liveHeight);
 }
 window.addEventListener('message',event=>{
