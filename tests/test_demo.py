@@ -153,5 +153,5 @@ def test_dashboard_loads_saved_logs():
     from dashboard_player import player_html
     html = player_html(logs['digital_twin'], decisions)
     assert '__DATA__' not in html
-    assert 'Bắt đầu demo' in html
+    assert 'Bắt đầu case' in html
     assert 'Xe đi & phản hồi' in html

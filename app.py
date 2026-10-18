@@ -32,8 +32,8 @@ def main():
         st.error('Chạy python3 start.py để tự chuẩn bị dữ liệu và mở demo.')
         st.stop()
 
-    st.header('1. Bấm bắt đầu để xem toàn bộ flow')
-    components.html(player_html(logs['digital_twin'], decisions), height=960, scrolling=True)
+    st.header('1. Bấm bắt đầu để xem từng case')
+    components.html(player_html(logs['digital_twin'], decisions), height=1140, scrolling=True)
     st.caption('Demo minh họa: Python thay giao lộ thật; cảm biến là cảm biến ảo. Hình xe phát lại kết quả đã mô phỏng, không phải camera hoặc dữ liệu giao thông trực tiếp.')
 
     st.header('2. Cách này có giúp xe bớt chờ không?')
@@ -62,7 +62,7 @@ def main():
         st.dataframe(counts, hide_index=True, width='stretch')
         st.bar_chart(counts.set_index('start_time')[['arrivals_NS', 'arrivals_EW']])
         st.write('ML là hồi quy Ridge nhỏ, học dần từ các lượt xe đã quan sát. Dự báo được kết hợp với trung bình quá khứ; không đọc trước lượt xe tương lai. Twin cập nhật mỗi 10 giây và tại điểm chọn đèn. Mỗi phương án 15/30/45 giây được đánh giá trên cùng 120 giây tương lai.')
-        st.caption('Bản phát lại bắt đầu sau giai đoạn học ban đầu và minh họa 5 quyết định liên tiếp. Xe vẽ trên hai đường đại diện hai nhóm NS/EW; không tái tạo chính xác các làn hoặc hướng rẽ. Tổng chờ tính từ hàng đợi sau phục vụ mỗi giây. Các xe còn lại cuối hai giờ được báo cáo riêng, không giả định đã đi hết.')
+        st.caption('Bản phát lại bắt đầu sau giai đoạn học ban đầu và có 5 case độc lập. Mỗi case dừng sau khoảng xanh để xem phản hồi; chỉ chuyển case khi bấm nút. Xe vẽ trên hai đường đại diện hai nhóm NS/EW; không tái tạo chính xác các làn hoặc hướng rẽ. Tổng chờ tính từ hàng đợi sau phục vụ mỗi giây. Các xe còn lại cuối hai giờ được báo cáo riêng, không giả định đã đi hết.')
 
 
 if __name__ == '__main__':

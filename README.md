@@ -1,6 +1,6 @@
 # Traffic Digital Twin — Demo giao lộ thông minh
 
-Demo Digital Twin nhỏ cho đồ án IoT/AIoT, chạy hoàn toàn trên máy cá nhân. **Chỉ cần bấm “Bắt đầu demo”** để xem xe đến, xếp hàng, bản sao số dự báo và thử phương án, đèn thay đổi và xe đi qua giao lộ.
+Demo Digital Twin nhỏ cho đồ án IoT/AIoT, chạy hoàn toàn trên máy cá nhân. **Chỉ cần bấm “Bắt đầu case”** để xem xe đến, xếp hàng, bản sao số dự báo và thử phương án, đèn thay đổi và xe đi qua giao lộ.
 
 - Một giao lộ, hai nhóm hướng: Bắc–Nam (NS) và Đông–Tây (EW).
 - Digital Twin có trạng thái riêng, nhận quan sát từ môi trường mô phỏng.
@@ -70,18 +70,18 @@ Repository có sẵn dữ liệu và log của một lần chạy. Trình khởi
 
 ## 4. Cách sử dụng và thuyết trình
 
-1. Mở **http://localhost:8501**, bấm **▶ Bắt đầu demo**.
+1. Mở **http://localhost:8501**, bấm **▶ Bắt đầu case**.
 2. Theo dõi flow tự chạy, không cần chọn thông số:
 
-   **Xe đến → Quan sát → Đồng bộ bản sao → Dự báo và thử đèn → Chọn đèn → Xe đi và phản hồi ↺**
+   **Hàng đợi ban đầu → Quan sát → Đồng bộ bản sao → Dự báo và thử đèn → Chọn đèn → Xe đi → Phản hồi và dừng**
 
 3. Bên trái là giao lộ, xe chờ, đèn đỏ–vàng–xanh và giây còn lại của pha. Bên phải là bản sao số, lưu lượng dự báo và điểm của ba phương án xanh 15/30/45 giây. Lời giải thích tiếng Việt tự thay đổi theo từng bước.
-4. Phía trên có **khung giờ của đoạn demo**, **giờ đang xem**, **lượt trong đoạn demo** và **số thứ tự quyết định trên toàn buổi 07:00–09:00**. Ví dụ “1/5 lượt trong demo” và “Lượt 4/207 của cả buổi” là hai số đếm khác nhau.
-5. Bấm **Ⅱ Tạm dừng** để đọc hoặc giải thích; bấm **▶ Tiếp tục** để chạy tiếp. **↺ Xem lại** trở về đầu và chờ bấm bắt đầu.
-6. Đoạn demo phát lại **5 quyết định**, bắt đầu sau giai đoạn học ban đầu của ML, rồi tự dừng. Đoạn xe di chuyển ở tốc độ **2×**; các bước giải thích tạm dừng đồng hồ mô phỏng để người xem đọc.
+4. Phía trên có **khung giờ của case hiện tại**, **giờ đang xem**, **case hiện tại trên tổng số case** và **số thứ tự quyết định trên toàn buổi 07:00–09:00**. Ví dụ “Case 1/5” và “Lượt 4/207 của cả buổi” là hai số đếm khác nhau.
+5. Bấm **Ⅱ Tạm dừng** để đọc hoặc giải thích; bấm **▶ Tiếp tục** để chạy tiếp. **↺ Xem lại case** trở về đầu case hiện tại và chờ bấm bắt đầu.
+6. Demo có **5 case độc lập**, bắt đầu sau giai đoạn học ban đầu của ML. Mỗi case nạp snapshot hàng đợi riêng, chọn đèn, phát lại đúng khoảng xanh đã chọn, hiện bảng phản hồi (ban đầu + xe đến − xe đi = còn chờ) rồi dừng. Bấm **Case tiếp theo →** mới mở case khác; case mới chờ bấm bắt đầu, không tự chạy nối tiếp. Bộ đếm xe đi qua được tính lại từ 0 cho từng case. Đoạn xe di chuyển ở tốc độ **2×**; các bước giải thích tạm dừng đồng hồ mô phỏng để người xem đọc.
 7. Kéo xuống xem bảng so sánh ba bộ điều khiển. Mở các mục thu gọn để xem biểu đồ, dữ liệu nguồn và giải thích kỹ thuật.
 
-Xe đầu hàng đi qua khi được phục vụ, xe sau tiến lên và xe mới nhập cuối hàng. Mỗi hình xe tương ứng **đúng 1 xe**. Dashboard vẽ đầy đủ số xe chờ, tự điều chỉnh kích thước để hàng đợi vừa khung. Mỗi giây thêm đúng số xe đến rồi cho đúng số xe được phục vụ đi qua; số lượt NS/EW đi qua từ đầu đoạn demo được hiển thị riêng. Xe đã đi qua vạch tiếp tục ra khỏi khung. Hai đường minh họa hai nhóm hướng, không tái tạo chính xác làn đường/hướng rẽ của giao lộ nguồn.
+Xe đầu hàng đi qua khi được phục vụ, xe sau tiến lên và xe mới nhập cuối hàng. Mỗi hình xe tương ứng **đúng 1 xe**. Dashboard vẽ đầy đủ số xe chờ, tự điều chỉnh kích thước để hàng đợi vừa khung. Mỗi giây thêm đúng số xe đến rồi cho đúng số xe được phục vụ đi qua; số lượt NS/EW đi qua trong case hiện tại được hiển thị riêng. Xe đã đi qua vạch tiếp tục ra khỏi khung. Hai đường minh họa hai nhóm hướng, không tái tạo chính xác làn đường/hướng rẽ của giao lộ nguồn.
 
 **Gợi ý lời giới thiệu:** “Giao lộ mô phỏng gửi số xe chờ cho một bản sao số. Bản sao dùng ML ước lượng xe sắp đến, thử ba thời lượng đèn xanh rồi chọn phương án có tổng chờ dự báo thấp nhất. Sau khi áp dụng, giao lộ gửi quan sát mới trở lại bản sao.”
 
